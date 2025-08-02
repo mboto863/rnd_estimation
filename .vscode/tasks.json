@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run MATLAB Script Prompt",
+      "type": "shell",
+      "command": "matlab",
+      "args": ["-batch", "${input:scriptCommand}"],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "scriptCommand",
+      "type": "promptString",
+      "description": "Enter MATLAB command to run",
+      "default": "startupProject; run('main.m')"
+    }
+  ]
+}

@@ -1,10 +1,10 @@
 classdef Hypergeometric
     properties
-        lambda (1, 1) double
-        a (1, 1) double
-        b (1, 1) double
-        c (1, 1) double
-        z (1, 1) double
+        lambda (1, :) double
+        a (1, :) double
+        b (1, :) double
+        c (1, :) double
+        z (1, :) double
     end
     methods
         function obj = Hypergeometric(lambda, a, b, c, z)
@@ -104,7 +104,7 @@ classdef Hypergeometric
             end
         end
 
-        % Numerical methods
+        % Numerical methods for approximating hypergeometric value
         function value = SingleFraction(obj)
             tolerance = 10 ^ -15;
             alphaValue = 0;
@@ -112,7 +112,7 @@ classdef Hypergeometric
             gammaValue = 1;           
             zetaValue = [1, 0, 0, 0];
             for iIteration = 1 : 3
-                alphaValue = (alphaValue + betaValue) * iIteration * (ojb.c +...
+                alphaValue = (alphaValue + betaValue) * iIteration * (obj.c +...
                     iIteration - 1);
                 betaValue = betaValue * (obj.a + iIteration - 1) * (...
                     obj.b + iIteration - 1) * obj.z;
@@ -139,6 +139,7 @@ classdef Hypergeometric
             value = zetaValue(4);          
         end
 
+        
         function parameters = getParameters(obj)
             parameters = struct(...
                 "lambda", obj.lambda,...
@@ -147,6 +148,12 @@ classdef Hypergeometric
                 "c", obj.c,...
                 "z", obj.z...
                 );
+        end
+    end
+    methods (Static, Access = private)
+        % Numerical methods for solving recurrence relations
+        function millerAlgorithm(N, a0, a1)
+
         end
     end
 end
