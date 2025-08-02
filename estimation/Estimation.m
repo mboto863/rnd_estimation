@@ -1,122 +1,184 @@
 classdef Estimation < handle
     properties
         model string
-        oh OutputHandler
-        fr FileReader
-        ps (1,1)
-        options = optimset('Display','none','TolFun',1e-6,'TolX',1e-6);
+        outputHandler OutputHandler
+        fileReader FileReader
+        parameterSetup (1, 1)
+        options = optimset('Display', 'none', 'TolFun', 1e-6, 'TolX', 1e-6);
     end
     methods
-        function obj = Estimation(model,fr,ps)
+        function obj = Estimation(model, fileReader, parameterSetup)
             arguments
                 model string
-                fr FileReader
-                ps (1,1)
+                fileReader FileReader
+                parameterSetup (1, 1)
             end
             obj.model = model;
-            obj.oh = OutputHandler();
-            obj.fr = fr;
-            obj.ps = ps;
+            obj.outputHandler = OutputHandler();
+            obj.fileReader = fileReader;
+            obj.parameterSetup = parameterSetup;
         end
-        function run(obj)
+        function runEstimation(obj)
             arguments
                 obj Estimation
             end
-            first_dataset = obj.fr.readDay(1);
-            names = obj.ps.getNames();
-            values = obj.ps.initializeAll(first_dataset);
-            vh = ValueHandler(obj.ps.dim,names,values);
-            files = obj.fr.getFiles();    
-            for iDay = 1:size(files,1)
-                [data,ok] = obj.fr.readDay(iDay);
+            % initialize parameter values
+            firstDataset = obj.fileReader.readDay(1);            
+            names = obj.parameterSetup.getNames();            
+            values = obj.parameterSetup.initializeAll(firstDataset);
+            % value handler instance
+            valueHandler = ValueHandler(...
+                obj.parameterSetup.dimension,...
+                names,...
+                values...
+                );
+            % get files
+            files = obj.fileReader.getFiles();
+            % iterate over days
+            for iDay = 1 : size(files, 1)
+                % check if day has enough data
+                [data, ok] = obj.fileReader.readDay(iDay);
                 if ~ok
                     continue;
                 end
-                s_ouput = obj.estimate(vh,data);
-                obj.oh.addEntry('fval',s_ouput.exit_flag,iDay);
-                obj.oh.addEntry('exit_flag',s_ouput.exit_flag,iDay);
-                perc_e = obj.percentError(s_ouput,data);
-                obj.oh.addEntry('perc_error',perc_e,iDay);
-                for jName = 1:size(vh.names,2)
-                    name = vh.names{jName};
-                    obj.oh.addEntry(name,vh.get(name),iDay);
+                % estimate
+                structuredOuput = obj.estimateRiskNeutralDensity(...
+                    valueHandler, data...
+                    );
+                % store outputs
+                obj.outputHandler.addEntry(...
+                    'fval',...
+                    structuredOuput.exit_flag,...
+                    iDay...
+                    );
+                obj.outputHandler.addEntry(...
+                    'exit_flag',...
+                    structuredOuput.exit_flag,...
+                    iDay...
+                    );
+                percentError = obj.computePercentError(...
+                    structuredOuput,...
+                    data...
+                    );
+                obj.outputHandler.addEntry(...
+                    'perc_error',...
+                    percentError,...
+                    iDay...
+                    );
+                for jName = 1 : size(valueHandler.names, 2)
+                    name = valueHandler.names{jName};
+                    obj.outputHandler.addEntry(...
+                        name,...
+                        valueHandler.get(name),...
+                        iDay...
+                        );
                 end
             end
         end
     end
     methods (Access = private)
-        function s = estimate(obj,vh,data)
+        function s = estimateRiskNeutralDensity(obj, valueHandler, data)
             arguments
                 obj Estimation
-                vh ValueHandler
+                valueHandler ValueHandler
                 data table
             end
-            init_v = vh.getVector();
-            static_bounds = {obj.ps.getAllLowerBounds(),obj.ps.getAllUpperBounds()};
-            wrapped_con = @(theta) feval(obj.model+".getnonlcon",theta,vh,data);
-            obj_fun = @(theta) obj.totalSquaredErrors(theta,vh,data);
+            % get values from value handler
+            initialValues = valueHandler.getVector();
+            % get constraints
+            staticBounds = {...
+                obj.parameterSetup.getAllLowerBounds(),...
+                obj.parameterSetup.getAllUpperBounds()...
+                };
+            wrappedConstraint = @(theta) feval(...
+                obj.model+".getnonLinearConstraint",...
+                theta,...
+                valueHandler,...
+                data...
+                );
+            % to minimize sum of squared errors
+            objectiveFunction = @(theta) obj.sumSquaredErrors(...
+                theta,...
+                valueHandler,...
+                data...
+                );
+            % optimization algorithm
             [theta,fval,exit_flag] = fmincon(...
-                obj_fun,...
-                init_v,...
+                objectiveFunction,...
+                initialValues,...
                 [],...
                 [],...
                 [],...
                 [],...
-                static_bounds{1},...
-                static_bounds{2},...
-                wrapped_con, ...
+                staticBounds{1},...
+                staticBounds{2},...
+                wrappedConstraint, ...
                 obj.options...
                 );
-            vh.setVector(theta);
-            s.omega = vh.get('omega');
-            s.mu = vh.get('mu');
-            s.sigma = vh.get('sigma');
-            s.nu = vh.get('nu');
+            % update parameter values
+            valueHandler.setVector(theta);
+            s.omega = valueHandler.get('omega');
+            s.mu = valueHandler.get('mu');
+            s.sigma = valueHandler.get('sigma');
+            s.nu = valueHandler.get('nu');
+            % other optimization metrics
             s.fval = fval;
             s.exit_flag = exit_flag;
         end
-        function perc_e = percentError(obj,params,data)
+        function percentError = computePercentError(obj, parameters, data)
             % only put data is being considered for percent error purposes
             arguments
                 obj Estimation
-                params struct
+                parameters struct
                 data table
             end
-            data_puts = data(data.opt_type == 'p',:);
-            perc_e = nan(size(data_puts.opt_type));
-            for iRow = 1:size(data_puts.opt_type,1)
-                perc_e(iRow) = obj.error(params,data_puts(iRow,:))/data_puts.mid(...
-                    iRow);
+            % filter data
+            putData = data(data.opt_type == 'p', :);
+            % compute percent errors
+            percentError = nan(size(putData.opt_type));
+            for iRow = 1:size(putData.opt_type,1)
+                percentError(iRow) = obj.computeError(parameters,...
+                    putData(iRow, :)) / putData.mid(iRow);
             end
         end
-        function e = error(obj,params,data)
+        function error = computeError(obj, parameters, data)
             arguments
                 obj Estimation
-                params struct
-                data (1,:)
+                parameters struct
+                data (1, :)
             end
-            e = feval(obj.model+".getPrice",params,data)-data.mid;
+            error = feval(obj.model+".getPrice", parameters, data) -...
+                data.mid;
         end
-        function e = totalSquaredErrors(obj,theta,vh,data)
+        function error = sumSquaredErrors(obj, theta, valueHandler, data)
             arguments
                 obj Estimation
-                theta (1,:)
-                vh ValueHandler
+                theta (1, :)
+                valueHandler ValueHandler
                 data table
-            end            
-            vh.setVector(theta);
-            pars = vh.getStruct();
-            summ = 0;
-            for iRow = 1:size(data.opt_type,1)
-                if data.opt_type(iRow) == 'c' && data.K(iRow) > data.F(iRow)
-                    data.mid(iRow) = data.mid(iRow)-data.under_mid(iRow)*exp(-data.divyield(1)*data.tau(1))+...
-                    data.K(iRow)*exp(-data.r(1)*data.tau(1));
-                    summ = summ+obj.error(pars,data(iRow,:))^2;
-                elseif data.opt_type(iRow) == 'p' && data.K(iRow) < data.F(iRow)
-                    summ = summ+obj.error(pars,data(iRow,:))^2;
+            end
+            % update values
+            valueHandler.setVector(theta);
+            % get structured values
+            parameters = valueHandler.getStructure();
+            % assign sum variable
+            sumValue = 0;
+            % iterate over rows
+            for iRow = 1 : size(data.opt_type, 1)
+                % check option type                
+                if data.opt_type(iRow) == 'c'
+                    % if call, get implicit put price
+                    data.mid(iRow) = data.mid(iRow) - data.under_mid(iRow)...
+                        * exp(-data.divyield(1) * data.tau(1)) +...
+                        data.K(iRow) * exp(-data.r(1) * data.tau(1));
+                    sumValue = sumValue + obj.computeError(parameters,...
+                        data(iRow, :)) ^ 2;
+                elseif data.opt_type(iRow) == 'p'
+                    sumValue = sumValue + obj.computeError(parameters,...
+                        data(iRow, :)) ^ 2;
                 end
             end
-            e = summ;
+            error = sumValue;
         end
     end
 end

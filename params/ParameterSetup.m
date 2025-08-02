@@ -1,12 +1,12 @@
 classdef (Abstract) ParameterSetup
     properties (Abstract)
-        dim (1,1)
+        dimension (1, 1)
     end
     methods (Abstract)
-        lvec = getAllLowerBounds(obj)
-        uvec = getAllUpperBounds(obj)
-        l = getLowerBound(obj,name)
-        u = getUpperBound(obj,name)
-        v = initializeParameter(obj,name,data)
+        lowerVector = getAllLowerBounds(obj)
+        upperVector = getAllUpperBounds(obj)
+        lower = getLowerBound(obj, name)
+        upper = getUpperBound(obj, name)
+        initialValue = initializeParameter(obj, name, data)
     end
 end

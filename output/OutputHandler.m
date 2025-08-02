@@ -3,33 +3,34 @@ classdef OutputHandler < handle
         logs struct = struct();
     end
     methods
-        function addEntry(obj,name,value,day)
+        function addEntry(obj, name, value, day)
             arguments
                 obj OutputHandler
                 name string
                 value
-                day (1,1) double
+                day (1, 1) double
             end
-            if ~isfield(obj.logs,name)
-                obj.logs.(name) = containers.Map('KeyType','double','ValueType','any');
+            if ~isfield(obj.logs, name)
+                obj.logs.(name) = containers.Map('KeyType', 'double',...
+                    'ValueType', 'any');
             end
             obj.logs.(name)(day) = value;
         end
-        function val = getRecords(obj,name)
+        function records = getRecords(obj, name)
             %get(NAME) - retrieve the logged outputs for NAME
             arguments
                 obj OutputHandler
                 name string
             end
-            if isfield(obj.logs,name)
-                val = obj.logs.(name);
+            if isfield(obj.logs, name)
+                records = obj.logs.(name);
             else
-                error('Output not found for name=%s',name)
+                error('Output not found for name=%s', name)
             end
         end
-        function s = getAllRecords(obj)
+        function records = getAllRecords(obj)
             %get all logs for all outputs
-            s = obj.logs;
+            records = obj.logs;
         end
     end
 end

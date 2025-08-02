@@ -4,8 +4,9 @@ classdef (Abstract) Model
     end
     methods (Abstract, Static)
         names = getNames()
-        [c,ceq] = getnonlcon(theta,vh,data)
-        price = getPrice(params,data)
-        price = getForwardPrice(params)
+        [inequality, equality] = getNonLinearConstraint(theta,...
+            valueHandler, data)
+        price = getPrice(parameters, data)
+        price = getForwardPrice(parameters)
     end
 end

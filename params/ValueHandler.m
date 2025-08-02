@@ -1,63 +1,60 @@
 classdef ValueHandler < handle
     properties
-        lengths (1,:)
-        names (1,:) cell {mustBeCellOfChar}
+        lengths (1, :)
+        names (1, :) cell {mustBeCellOfChar}
         state struct
     end
     methods
-        function obj = ValueHandler(dim,names,values)
+        function obj = ValueHandler(dimension, names, values)
             arguments
-                dim (1,1)
-                names (1,:) cell {mustBeCellOfChar}
-                values (1,:)
+                dimension (1, 1)
+                names (1, :) cell {mustBeCellOfChar}
+                values (1, :)
             end
             obj.names = names;
-            obj.lengths = [dim-1,dim*ones(1,size(names,2)-1)];
+            obj.lengths = [dimension - 1, dimension * ones(1,...
+                size(names, 2) - 1)];
             idx = 1;
             obj.state(1) = struct();
             for iPar = 1:numel(names)
-                len = obj.lengths(iPar);
-                obj.state.(names{iPar}) = values(idx:idx+len-1);
-                idx = idx+len;
+                length = obj.lengths(iPar);
+                obj.state.(names{iPar}) = values(idx : idx + length - 1);
+                idx = idx + length;
             end
         end
-        function setVector(obj,vec)
+        function setVector(obj, vector)
             arguments
                 obj ValueHandler
-                vec (1,:)
+                vector (1, :)
             end
-            if sum(obj.lengths) ~= numel(vec)
+            if sum(obj.lengths) ~= numel(vector)
                 error('Input vector length does not match expected total parameter size')
             end
             idx = 1;
-            for iPar = 1:numel(obj.names)
+            for iPar = 1 : numel(obj.names)
                 name = obj.names{iPar};
-                len = obj.lengths(iPar);
-                obj.state.(name) = vec(idx:idx+len-1);
-                idx = idx+len;
+                length = obj.lengths(iPar);
+                obj.state.(name) = vector(idx : idx + length - 1);
+                idx = idx + length;
             end
         end
-        function vec = getVector(obj)
-            vec = [];
-            for iPar = 1:numel(obj.names)
+        function vector = getVector(obj)
+            vector = [];
+            for iPar = 1 : numel(obj.names)
                 name = obj.names{iPar};
                 value = obj.state.(name);
-                vec = [vec,value(:)']; %ensure row vector for consistency
+                vector = [vector, value(:)']; %ensure row vector for consistency
             end
-%             v = zeros(1,numel(obj.names));
-%             for j = 1:numel(obj.names)
-%                 v(j) = obj.values.(obj.names{j});
-%             end
         end
-        function s = getStruct(obj)
-            s = obj.state;
+        function structured = getStructure(obj)
+            structured = obj.state;
         end
-        function val = getParameter(obj,name)
+        function value = getParameter(obj, name)
             arguments
                 obj ValueHandler
                 name char
             end
-            val = obj.state.(name);
+            value = obj.state.(name);
         end
     end
 end
