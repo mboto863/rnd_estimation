@@ -21,8 +21,13 @@ classdef Hypergeometric
             obj.c = c;
             obj.z = z;
         end
-        function approximate(obj)
-            
+        function approximation = approximate(obj)
+            obj.normalizez();
+            if size(obj.a, 2) > 1
+                approximation = HypergeometricMixture(obj.lambda, obj.a, obj.b, obj.c, obj.z).approximate();
+            else
+                approximation = obj.SingleFraction();
+            end
         end
     end
     methods (Access = private)
@@ -104,8 +109,7 @@ classdef Hypergeometric
             tolerance = 10 ^ -15;
             alphaValue = 0;
             betaValue = 1;
-            gammaValue = 1;
-            %zetaValue = [zetaValue(j-2), zetaValue(j-1), zetaValue(j), zetaValue(j+1)]
+            gammaValue = 1;           
             zetaValue = [1, 0, 0, 0];
             for iIteration = 1 : 3
                 alphaValue = (alphaValue + betaValue) * iIteration * (ojb.c +...
