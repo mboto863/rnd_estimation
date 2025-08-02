@@ -1,4 +1,4 @@
-classdef ApproximateHypergeometricMixture < handle
+classdef HypergeometricMixture < handle
     properties
         lambda (1, :) double
         a (1, :) double
@@ -7,7 +7,7 @@ classdef ApproximateHypergeometricMixture < handle
         z (1, :) double
     end
     methods
-        function obj = ApproximateHypergeometricMixture(lambda, a, b, c, z)
+        function obj = HypergeometricMixture(lambda, a, b, c, z)
             arguments
                 lambda (1, :) double
                 a (1, :) double
