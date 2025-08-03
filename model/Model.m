@@ -3,10 +3,10 @@ classdef (Abstract) Model
 
     end
     methods (Abstract, Static)
-        names = getNames()
+        names                  = getNames()
         [inequality, equality] = getNonLinearConstraint(theta,...
             valueHandler, data)
-        price = getPrice(parameters, data)
-        price = getForwardPrice(parameters)
+        price                  = getPrice(parameters, data)
+        price                  = getForwardPrice(parameters)
     end
 end

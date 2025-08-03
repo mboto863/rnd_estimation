@@ -1,16 +1,16 @@
 fprintf("Running ValueHandler tests...\n");
 
-fr = FileReader();
+fr    = FileReader();
 data1 = fr.readDay(1);
 
-sps = StudentParameterSetup(5);
-vec = sps.initializeAll(data1);
+sps   = StudentParameterSetup(5);
+vec   = sps.initializeAll(data1);
 names = StudentParameterSetup.getNames();
 
-vh = ValueHandler(5,names,vec);
+vh    = ValueHandler(5,names,vec);
 disp(vh.getVector());
 data2 = fr.readDay(2);
-vec = sps.initializeAll(data2);
+vec   = sps.initializeAll(data2);
 vh.setVector(vec);
 vh.getStruct();
 disp(vh.getVector());

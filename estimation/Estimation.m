@@ -13,19 +13,27 @@ classdef Estimation < handle
                 fileReader FileReader
                 parameterSetup (1, 1)
             end
-            obj.model = model;
-            obj.outputHandler = OutputHandler();
-            obj.fileReader = fileReader;
+            obj.model          = model;
+            obj.outputHandler  = OutputHandler();
+            obj.fileReader     = fileReader;
             obj.parameterSetup = parameterSetup;
         end
         function runEstimation(obj)
+        %RUNESTIMATION  Run the estimation.
+        %
+        % Input:
+        %   obj     Estimation object.
+        %
+        % Output:
+        %
+        
             arguments
                 obj Estimation
             end
             % initialize parameter values
             firstDataset = obj.fileReader.readDay(1);            
-            names = obj.parameterSetup.getNames();            
-            values = obj.parameterSetup.initializeAll(firstDataset);
+            names        = obj.parameterSetup.getNames();            
+            values       = obj.parameterSetup.initializeAll(firstDataset);
             % value handler instance
             valueHandler = ValueHandler(...
                 obj.parameterSetup.dimension,...
@@ -77,7 +85,17 @@ classdef Estimation < handle
         end
     end
     methods (Access = private)
-        function s = estimateRiskNeutralDensity(obj, valueHandler, data)
+        function output = estimateRiskNeutralDensity(obj, valueHandler, data)
+        %ESTIMATERISKNEUTRALDENSITY Estimates the risk neutral density
+        %
+        % Input:
+        %   obj             The Estimation object.
+        %   valueHandler    A ValueHandler object.
+        %   data            Data to be used for the estimation.
+        %
+        % Output:
+        %   output          The output from the optimization algorithm.
+
             arguments
                 obj Estimation
                 valueHandler ValueHandler
@@ -117,23 +135,33 @@ classdef Estimation < handle
                 );
             % update parameter values
             valueHandler.setVector(theta);
-            s.omega = valueHandler.get('omega');
-            s.mu = valueHandler.get('mu');
-            s.sigma = valueHandler.get('sigma');
-            s.nu = valueHandler.get('nu');
+            output.omega = valueHandler.get('omega');
+            output.mu    = valueHandler.get('mu');
+            output.sigma = valueHandler.get('sigma');
+            output.nu    = valueHandler.get('nu');
+            
             % other optimization metrics
-            s.fval = fval;
-            s.exit_flag = exit_flag;
+            output.fval      = fval;
+            output.exit_flag = exit_flag;
         end
         function percentError = computePercentError(obj, parameters, data)
-            % only put data is being considered for percent error purposes
+        %PERCENTERROR Computes percent error of option model price
+        % Input:
+        %   obj             The Estimation object.
+        %   parameters      The parameters of the RND
+        %   data            Tablized option data
+        %
+        % Output:
+        %   percentError    Percent error of option model price
+
             arguments
                 obj Estimation
                 parameters struct
                 data table
             end
-            % filter data
+            % only put data is being considered for percent error purposes
             putData = data(data.opt_type == 'p', :);
+            
             % compute percent errors
             percentError = nan(size(putData.opt_type));
             for iRow = 1:size(putData.opt_type,1)
@@ -142,6 +170,16 @@ classdef Estimation < handle
             end
         end
         function error = computeError(obj, parameters, data)
+        %COMPUTEERROR Computes the error of option model price
+        %
+        % Input:
+        %   obj         The Estimation object.
+        %   parameters  The parameters of the RND
+        %   data        Tablized option data
+        %
+        % Output:
+        %   error       The error of option model price
+
             arguments
                 obj Estimation
                 parameters struct
@@ -151,6 +189,17 @@ classdef Estimation < handle
                 data.mid;
         end
         function error = sumSquaredErrors(obj, theta, valueHandler, data)
+        %SUMSQUAREDERRORS Computes the sum of the squared option model price errors
+        %
+        % Input:
+        %   obj             The Estimation object.
+        %   theta           The RND parameters
+        %   valueHandler    A ValueHandler object.
+        %   data            Tablized option data
+        %
+        % Output:
+        %   error           Summed squared errors
+
             arguments
                 obj Estimation
                 theta (1, :)
@@ -159,10 +208,13 @@ classdef Estimation < handle
             end
             % update values
             valueHandler.setVector(theta);
+            
             % get structured values
             parameters = valueHandler.getStructure();
+            
             % assign sum variable
             sumValue = 0;
+            
             % iterate over rows
             for iRow = 1 : size(data.opt_type, 1)
                 % check option type                
@@ -171,7 +223,7 @@ classdef Estimation < handle
                     data.mid(iRow) = data.mid(iRow) - data.under_mid(iRow)...
                         * exp(-data.divyield(1) * data.tau(1)) +...
                         data.K(iRow) * exp(-data.r(1) * data.tau(1));
-                    sumValue = sumValue + obj.computeError(parameters,...
+                    sumValue       = sumValue + obj.computeError(parameters,...
                         data(iRow, :)) ^ 2;
                 elseif data.opt_type(iRow) == 'p'
                     sumValue = sumValue + obj.computeError(parameters,...

@@ -16,12 +16,19 @@ classdef HypergeometricMixture < handle
                 z (1, :) double
             end
             obj.lambda = lambda;
-            obj.a = a;
-            obj.b = b;
-            obj.c = c;
-            obj.z = z;
+            obj.a      = a;
+            obj.b      = b;
+            obj.c      = c;
+            obj.z      = z;
         end
-        function approximation = approximate(obj)
+        function approximation = ComputeMixture(obj)
+        %COMPUTEMIXTURE Approximate the Gaussian Hypergeometric mixture.
+        %
+        % Input:
+        %   obj              The HypergeometricMixture object.
+        %
+        % Output:
+        %   approximation    The approximation value. 
             for iComponent = 1 : size(obj.a, 2)
                 approximation = Hypergeometric(...
                 obj.lambda(iComponent),...

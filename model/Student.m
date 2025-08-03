@@ -3,8 +3,18 @@ classdef Student < Model
         
     end
     methods (Static)
-        function [inequality, equality] = getNonLinearConstraint(theta,...
-                valueHandler, data)
+        function [inequality, equality] = getNonLinearConstraint(theta, valueHandler, data)
+        %GETNONLINEARCONSTRAINT Computes the non linear constraints.
+        %
+        % Input:
+        %   theta           The RND parameters.
+        %   valueHandler    A ValueHandler object.
+        %   data            tablized option data
+        %
+        % Output:
+        %   inequality      Non linear constraint inequality.
+        %   equality        Non linear constraint equality.
+
             arguments
                 theta (1, :)
                 valueHandler ValueHandler
@@ -20,28 +30,37 @@ classdef Student < Model
             nu = parameters.nu;
 
             % constraints
-            equality = Student.getForwardPrice(parameters) - data.F(1);
-            x1 = (mu ./ sigma) .^ 2;
-            x2 = ((data.K(end) - mu) ./ sigma) .^ 2;
-            x = max([x1; x2]);
-            zBound = mu .^ 2 ./ sigma .^ 2 ./ nu - 1;
+            equality   = Student.getForwardPrice(parameters) - data.F(1);
+            x1         = (mu ./ sigma) .^ 2;
+            x2         = ((data.K(end) - mu) ./ sigma) .^ 2;
+            x          = max([x1; x2]);
+            zBound     = mu .^ 2 ./ sigma .^ 2 ./ nu - 1;
             inequality = [zBound, x - nu];
         end
         function price = getPrice(parameters, data)
+        %GETPRICE Computes option model price.
+        %
+        % Input:
+        %   parameters  The RND parameters.
+        %   data        Tablized option data.
+        %
+        % Output:
+        %   price       Option model price.
+        %
             arguments
                 parameters struct
                 data (1, :)
             end
             % set parameters
             omega = parameters.omega;
-            mu = parameters.mu;
+            mu    = parameters.mu;
             sigma = parameters.sigma;
-            nu = parameters.nu;
+            nu    = parameters.nu;
 
             % set data values
-            strike = data.K;
-            riskFree = data.r;
-            dividendYield = data.divyield;
+            strike         = data.K;
+            riskFree       = data.r;
+            dividendYield  = data.divyield;
             timeToMaturity = data.tau;
 
             % set hypergeometric arguments
@@ -55,7 +74,7 @@ classdef Student < Model
             % compute other values
             normalizationFactor = sigma .* sqrt(nu .* pi) .*...
                 gamma(nu ./ 2) ./ gamma((nu + 1) ./ 2);
-            d = mu ./ abs(mu) .* sigma .* nu ./ (nu - 1) ./...
+            d                   = mu ./ abs(mu) .* sigma .* nu ./ (nu - 1) ./...
                 normalizationFactor .* (1 + mu .^ 2 ./ sigma .^ 2 ./...
                 nu) .^ 0.5 .* Student.approximateBySingleFraction(...
                 a, b, c, z{1});
@@ -71,6 +90,14 @@ classdef Student < Model
                 Student.approximateBySingleFraction(a , b, c, z{2})));
         end
         function price = getForwardPrice(parameters)
+        %GETFORWARDPRICE Computes underlying model forward price.
+        %
+        % Input:
+        %   parameters  The RND parameters.
+        %
+        % Output:
+        %   price       The underlying model forward price.
+        %
             arguments
                 parameters struct
             end
@@ -80,13 +107,25 @@ classdef Student < Model
     end
     methods (Static, Access = private)
         function value = approximateBySingleFraction(a, b, c, z)
+        %APPROXIMATEBYSINGLEFRACTION Computes an approximation to the Gaussian Hypergeometric function by the Single
+        % Fraction method
+        %
+        % Input:
+        %   a       The a argument of the Gaussian Hypergeometric function.
+        %   b       The b argument of the Gaussian Hypergeometric function.
+        %   c       The c argument of the Gaussian Hypergeometric function.
+        %   z       The z argument of the Gaussian Hypergeometric function.
+        %
+        % Output:
+        %   value   An approximation the the Gaussian Hypergeometric function.
+        %
             arguments
                 a (1, :) double
                 b (1, :) double
                 c (1, :) double
                 z (1, :) double
             end
-            value = zeros(1, size(a, 2));
+            value     = zeros(1, size(a, 2));
             tolerance = 10 ^ -15;
             for iComponent = 1 : size(a, 2)
                 alpha = 0;
@@ -95,9 +134,9 @@ classdef Student < Model
                 %zeta = [zeta(j-2), zeta(j-1), zeta(j), zeta(j+1)]
                 zeta = [1, 0, 0, 0];
                 for jIteration = 1:3
-                    alpha = (alpha + betaa) * jIteration * (c(iComponent)+...
+                    alpha  = (alpha + betaa) * jIteration * (c(iComponent)+...
                         jIteration - 1);
-                    betaa = betaa * (a(iComponent) + jIteration - 1) * (...
+                    betaa  = betaa * (a(iComponent) + jIteration - 1) * (...
                         b(iComponent) + jIteration - 1) * z(iComponent);
                     gammaa = gammaa * jIteration * (c(iComponent) +...
                         jIteration - 1);
@@ -107,16 +146,17 @@ classdef Student < Model
                 while abs(zeta(4) - zeta(3)) / abs(zeta(3)) > tolerance ||...
                         abs(zeta(3) - zeta(2))/abs(zeta(2)) > tolerance ||...
                         abs(zeta(2) - zeta(1)) / abs(zeta(1)) > tolerance
-                    alpha = (alpha + betaa) * jIteration * (...
+                    alpha   = (alpha + betaa) * jIteration * (...
                         c(iComponent) + jIteration - 1);
-                    betaa = betaa * (a(iComponent) + jIteration - 1) * (...
+                    betaa   = betaa * (a(iComponent) + jIteration - 1) * (...
                         b(iComponent) + jIteration - 1) * z(iComponent);
-                    gammaa = gammaa * jIteration * (c(iComponent) +...
+                    gammaa  = gammaa * jIteration * (c(iComponent) +...
                         jIteration - 1);
                     zeta(1) = zeta(2);
                     zeta(2) = zeta(3);
                     zeta(3) = zeta(4);
                     zeta(4) = (alpha + betaa) / gammaa;
+                    
                     jIteration = jIteration + 1;
                 end
                 value(iComponent) = zeta(4);

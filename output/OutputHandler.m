@@ -4,6 +4,17 @@ classdef OutputHandler < handle
     end
     methods
         function addEntry(obj, name, value, day)
+        %ADDENTRY   Adds a log entry.
+        %
+        % Input:
+        %   obj     The OutputHandler object.
+        %   name    The name of the log entry.
+        %   value   The value of the log entry.
+        %   day     The day of the log entry.
+        %
+        % Output:
+        %
+
             arguments
                 obj OutputHandler
                 name string
@@ -17,7 +28,15 @@ classdef OutputHandler < handle
             obj.logs.(name)(day) = value;
         end
         function records = getRecords(obj, name)
-            %get(NAME) - retrieve the logged outputs for NAME
+        %GETRECORDS Retrieve the logged outputs
+        %
+        % Input:
+        %   obj         The OutputHandler object.
+        %   name        The Name of the log entries to retrieve.
+        %
+        % Output:
+        %   records     The records of the logbook.
+
             arguments
                 obj OutputHandler
                 name string
@@ -29,7 +48,14 @@ classdef OutputHandler < handle
             end
         end
         function records = getAllRecords(obj)
-            %get all logs for all outputs
+        %GETALLRECORDS Retrieves all the records.
+        %
+        % Input:
+        %   obj         The OutputHandler object.
+        %
+        % Output:
+        %   records     The records.
+        
             records = obj.logs;
         end
     end

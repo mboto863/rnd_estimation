@@ -1,4 +1,11 @@
 function startupProject()
+%STARTUPPROJECT add all relevant paths to MATLAB's path
+%
+% Input:
+%
+% Output:
+%
+
     try
         % Try to get the project root using the Project API
         root = matlab.project.rootProject().RootFolder;
