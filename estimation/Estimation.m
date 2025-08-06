@@ -109,7 +109,7 @@ classdef Estimation < handle
                 obj.parameterSetup.getAllUpperBounds()...
                 };
             wrappedConstraint = @(theta) feval(...
-                obj.model+".getnonLinearConstraint",...
+                obj.model+".getNonLinearConstraint",...
                 theta,...
                 valueHandler,...
                 data...
@@ -159,12 +159,15 @@ classdef Estimation < handle
                 parameters struct
                 data table
             end
+            % Assign alias for column names configuration.
+            c = ColumnNamesConfig();
+
             % only put data is being considered for percent error purposes
-            putData = data(data.opt_type == 'p', :);
+            putData = data(data.(c.optionType) == Constants.putCodification, :);
             
             % compute percent errors
-            percentError = nan(size(putData.opt_type));
-            for iRow = 1:size(putData.opt_type,1)
+            percentError = nan(size(putData.(c.optionType)));
+            for iRow = 1:size(putData.(c.optionType),1)
                 percentError(iRow) = obj.computeError(parameters,...
                     putData(iRow, :)) / putData.mid(iRow);
             end
@@ -186,7 +189,7 @@ classdef Estimation < handle
                 data (1, :)
             end
             error = feval(obj.model+".getPrice", parameters, data) -...
-                data.mid;
+                data.(ColumnNamesConfig.optionMid);
         end
         function error = sumSquaredErrors(obj, theta, valueHandler, data)
         %SUMSQUAREDERRORS Computes the sum of the squared option model price errors
@@ -206,6 +209,9 @@ classdef Estimation < handle
                 valueHandler ValueHandler
                 data table
             end
+            % Assign alias for column names configuration.
+            c = ColumnNamesConfig();
+
             % update values
             valueHandler.setVector(theta);
             
@@ -216,16 +222,16 @@ classdef Estimation < handle
             sumValue = 0;
             
             % iterate over rows
-            for iRow = 1 : size(data.opt_type, 1)
+            for iRow = 1 : size(data.(c.optionType), 1)
                 % check option type                
-                if data.opt_type(iRow) == 'c'
+                if data.(c.optionType)(iRow) == Constants.callCodification
                     % if call, get implicit put price
-                    data.mid(iRow) = data.mid(iRow) - data.under_mid(iRow)...
-                        * exp(-data.divyield(1) * data.tau(1)) +...
-                        data.K(iRow) * exp(-data.r(1) * data.tau(1));
+                    data.(c.optionMid)(iRow) = data.(c.optionMid)(iRow) - data.(c.underlyingMid)(iRow)...
+                        * exp(-data.(c.dividendYield)(1) * data.(c.timeToMaturity)(1)) +...
+                        data.(c.strike)(iRow) * exp(-data.(c.riskFreeRate)(1) * data.(c.timeToMaturity)(1));
                     sumValue       = sumValue + obj.computeError(parameters,...
                         data(iRow, :)) ^ 2;
-                elseif data.opt_type(iRow) == 'p'
+                elseif data.(c.optionType)(iRow) == Constants.putCodification
                     sumValue = sumValue + obj.computeError(parameters,...
                         data(iRow, :)) ^ 2;
                 end

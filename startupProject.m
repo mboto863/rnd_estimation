@@ -15,7 +15,7 @@ function startupProject()
     end
     
     % Add as new folders are implemented.
-    folders = ["data", "estimation", "io", "model", "output", "params", "tests", "utils"];
+    folders = ["data", "estimation", "io", "model", "output", "params", "tests", "utils", "config"];
     for f = folders
         folderPath = fullfile(root, f);
         if isfolder(folderPath)

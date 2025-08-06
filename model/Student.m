@@ -20,6 +20,9 @@ classdef Student < Model
                 valueHandler ValueHandler
                 data table
             end
+            % Assign alias for ColumnNamesConfig
+            c = ColumnNamesConfig();
+
             % update value handler
             valueHandler.setVector(theta);
 
@@ -30,9 +33,9 @@ classdef Student < Model
             nu = parameters.nu;
 
             % constraints
-            equality   = Student.getForwardPrice(parameters) - data.F(1);
+            equality   = Student.getForwardPrice(parameters) - data.(c.futuresPrice)(1);
             x1         = (mu ./ sigma) .^ 2;
-            x2         = ((data.K(end) - mu) ./ sigma) .^ 2;
+            x2         = ((data.(c.strike)(end) - mu) ./ sigma) .^ 2;
             x          = max([x1; x2]);
             zBound     = mu .^ 2 ./ sigma .^ 2 ./ nu - 1;
             inequality = [zBound, x - nu];
@@ -51,27 +54,24 @@ classdef Student < Model
                 parameters struct
                 data (1, :)
             end
+            % Assign alias for ColumnNamesConfig
+            cn = ColumnNamesConfig();
+
             % set parameters
             omega = parameters.omega;
             mu    = parameters.mu;
             sigma = parameters.sigma;
             nu    = parameters.nu;
 
-            % set data values
-            strike         = data.K;
-            riskFree       = data.r;
-            dividendYield  = data.divyield;
-            timeToMaturity = data.tau;
-
-            % set hypergeometric arguments
+            % Assign hypergeometric arguments.
             a = -0.5 * ones(size(mu));
             b = 1 - nu ./ 2;
             c = 0.5 * ones(size(mu));
             z = {1 ./ (1 + sigma .^ 2 .* nu ./ mu .^ 2),...
-                (strike - mu) .^ 2 ./ ((strike - mu) .^ 2 + sigma .^...
+                (data.(cn.strike) - mu) .^ 2 ./ ((data.(cn.strike) - mu) .^ 2 + sigma .^...
                     2 .* nu)};
             
-            % compute other values
+            % Compute RND factors
             normalizationFactor = sigma .* sqrt(nu .* pi) .*...
                 gamma(nu ./ 2) ./ gamma((nu + 1) ./ 2);
             d                   = mu ./ abs(mu) .* sigma .* nu ./ (nu - 1) ./...
@@ -79,14 +79,13 @@ classdef Student < Model
                 nu) .^ 0.5 .* Student.approximateBySingleFraction(...
                 a, b, c, z{1});
 
-            % complete last omega
+            % Complete last omega.
             omega = [omega, 1 - sum(omega)];
 
-            % compute price
-            price = exp(-(riskFree - dividendYield) * timeToMaturity) *...
-                sum(omega .* (d + (strike - mu) ./ abs(strike - mu) .*...
-                sigma .^ 2 .* nu ./ (nu - 1) ./ normalizationFactor .* (1 +...
-                (strike - mu) .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5 .*...
+            % Compute price.
+            price = exp(-(data.(cn.riskFreeRate) - data.(cn.dividendYield)) * data.(cn.timeToMaturity)) *...
+                sum(omega .* (d + (data.(cn.strike) - mu) ./ abs(data.(cn.strike) - mu) .* sigma .^ 2 .* nu ./ (nu - 1) ./...
+                 normalizationFactor .* (1 + (data.(cn.strike) - mu) .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5 .*...
                 Student.approximateBySingleFraction(a , b, c, z{2})));
         end
         function price = getForwardPrice(parameters)

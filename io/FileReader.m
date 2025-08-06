@@ -47,7 +47,7 @@ classdef FileReader
         end
     end
     methods (Static, Access = private)
-        function [filtered, success] = filterTable(data, columns)
+        function [filtered, success] = filterTable(data)
         %FILTERTABLE Filters from tablized data.
         %
         % Input:
@@ -59,36 +59,40 @@ classdef FileReader
         %   success     Whether the table contains enough data to be used
 
             arguments
-                data table
-                columns string = [...
-                "root_cycle", "t", "T", "tau_d", "tau", "opt_type", "K", "bid", "mid", "ask", "vol", "oi", "under_bid",...
-                "under_mid", "under_ask", "r", "P", "F", "divyield", "IV"]
+                data table                
             end
 
             % filter columns
-            data = data(:, columns);
+            % data = data(:, columns);
+            c = ColumnNamesConfig();
             
             % cells do not support operator '=='
-            data.root_cycle = categorical(data.root_cycle);
-            data.opt_type   = categorical(data.opt_type);
-            
-            expirationPattern       = "SPX7"; % Options that expire on the third friday of the month.
-            minimumDaysToExpiration = 7; % Choose only options with more than 7 days to expiration.
+            data.(c.rootCycle) = categorical(data.(c.rootCycle));
+            data.(c.optionType)   = categorical(data.(c.optionType));
             
             
-            filtered = data((data.root_cycle == expirationPattern) & (data.tau_d > minimumDaysToExpiration) &...
-            (data.bid > Constants.minimumTickValue), :);                     
+            
+            filtered = data((data.(c.rootCycle) == Constants.expirationPattern) &...
+            (data.(c.daysToMaturity) > Constants.minimumDaysToExpiration) &...
+            (data.(c.optionBid) > Constants.minimumTickValue), :);                     
             
             % filter ITM options
-            filtered(((filtered.opt_type == Constants.callCodification) & (filtered.K <= filtered.F)) |...
-            ((filtered.opt_type == Constants.putCodification) & (filtered.K >= filtered.F)), :) = [];
+            filtered(((filtered.(c.optionType) == Constants.callCodification) &...
+            (filtered.(c.strike) <= filtered.(c.futuresPrice))) |...
+            ((filtered.(c.optionType) == Constants.putCodification) &...
+            (filtered.(c.strike) >= filtered.(c.futuresPrice))), :) = [];
 
-            % pick first maturity
-            filtered = filtered(filtered.T == filtered.T(1), :);
-
+            % Pick first maturity.
+            filtered = filtered(filtered.(c.maturity) == filtered.(c.maturity)(1), :);
+            
+            % Filter for variables not used in the estimation.
+            estimationVariables = [];
+            for variable = Constants.estimationVariables
+                estimationVariables = [estimationVariables, variable];
+            end
+            filtered = filtered(:, estimationVariables);
             % check if enough data
-            minimumRows  = 5; % Minimum number of rows to procceed with the estimation
-            if height(filtered) <= minimumRows
+            if height(filtered) <= Constants.minimumRows
                 filtered = [];
                 success  = false;
                 return
@@ -102,8 +106,11 @@ classdef FileReader
         %
         % Output:
         %   root    Project root path.
-
-            root = matlab.project.rootProject().RootFolder;
+            try
+                root = matlab.project.rootProject().RootFolder;
+            catch
+                root = pwd; % Fallback to current working directory if project API fails
+            end
         end
     end
 end

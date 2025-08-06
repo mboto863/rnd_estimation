@@ -1,11 +1,11 @@
 classdef StudentParameterSetup < ParameterSetup
     properties
-        dimension (1, 1)
+        dimension
     end
     methods
         function obj = StudentParameterSetup(dimension)
             arguments
-                dimension (1, 1)
+                dimension
             end
             obj.dimension = dimension;
         end
@@ -141,6 +141,9 @@ classdef StudentParameterSetup < ParameterSetup
                 name (1, 1) string
                 data table
             end
+            % Assign alias for the configuration of column names.
+            c = ColumnNamesConfig();
+
             switch name
                 case "omega"
                     initialValue = 1 / obj.dimension * ones(1,...
@@ -148,7 +151,7 @@ classdef StudentParameterSetup < ParameterSetup
                 case "mu"
                     [lowerBound, upperBound] = deal(obj.getLowerBound(name)...
                         ,obj.getUpperBound(name));
-                    forwardPrice             = data.F(1);
+                    forwardPrice             = data.(c.futuresPrice)(1);
                     if any(forwardPrice < lowerBound) ||...
                             any(forwardPrice > upperBound)
                         error('mu initializer not within static bounds');
@@ -158,10 +161,10 @@ classdef StudentParameterSetup < ParameterSetup
                     [lowerBound, upperBound] = deal(obj.getLowerBound(name)...
                         ,obj.getUpperBound(name));
                     idxAtTheMoney            = abs(...
-                        data.K - data.under_mid(1))...
-                        == min(abs((data.K - data.under_mid(1))));
-                    impliedVolatility        = data.IV(find(idxAtTheMoney == 1, 1)...
-                        ) * data.under_mid(1);
+                        data.(c.strike) - data.(c.underlyingMid)(1))...
+                        == min(abs((data.(c.strike) - data.(c.underlyingMid)(1))));
+                    impliedVolatility        = data.(c.impliedVolatility)(find(idxAtTheMoney == 1, 1)...
+                        ) * data.(c.underlyingMid)(1);
                     initialValue             = impliedVolatility * ones(...
                         1, obj.dimension);
                     if any(initialValue < lowerBound) ||...
