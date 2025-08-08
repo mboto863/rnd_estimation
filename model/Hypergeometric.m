@@ -1,4 +1,4 @@
-classdef Hypergeometric
+classdef Hypergeometric < handle
     properties
         lambda (1, :) double
         a (1, :) double

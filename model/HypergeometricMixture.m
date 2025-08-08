@@ -29,6 +29,7 @@ classdef HypergeometricMixture < handle
         %
         % Output:
         %   approximation    The approximation value. 
+        
             for iComponent = 1 : size(obj.a, 2)
                 approximation = Hypergeometric(...
                 obj.lambda(iComponent),...
