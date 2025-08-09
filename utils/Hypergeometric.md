@@ -21,3 +21,9 @@ PearsonOlverMasonPorter table 6 p.853
 ## c < -20, |a|, |b|
 
 - Use rec00plus_backward
+
+# Cancellation
+- b - a or c - a - b is close to an integer.
+
+# Transformation Formulas
+- Need to be looked at again, as Pearson provides new ones in his more recent article.
