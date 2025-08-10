@@ -13,11 +13,14 @@ function startupProject()
         root = pwd;
         
     end
-    
+    % Add folders in the root.
+    addpath(fullfile(root, "tests"));
+    addpath(fullfile(root, "data"));
+
     % Add as new folders are implemented.
-    folders = ["data", "estimation", "io", "model", "output", "params", "tests", "utils", "config"];
+    folders = ["estimation", "io", "model", "output", "params", "utils", "config"];
     for f = folders
-        folderPath = fullfile(root, f);
+        folderPath = fullfile(root, "src", f);
         if isfolder(folderPath)
             addpath(folderPath);
         else
