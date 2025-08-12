@@ -5,13 +5,12 @@ function startupProject()
 %
 % Output:
 %
-
-    try
-        % Try to get the project root using the Project API
-        root = matlab.project.rootProject().RootFolder;
-    catch
+    project = matlab.project.rootProject();
+    % Check if a matlab project is currently open.
+    if isempty(project)
         root = pwd;
-        
+    else
+        root = matlab.project.rootProject().RootFolder;
     end
     % Add folders in the root.
     addpath(fullfile(root, "tests"));
@@ -27,12 +26,4 @@ function startupProject()
             warning("Folder not found: %s", folderPath);
         end
     end
-   % addpath(fullfile(root,"params"));
-   % addpath(fullfile(root,"utils"));
-   % addpath(fullfile(root,"output"));
-   % addpath(fullfile(root,"model"));
-   % addpath(fullfile(root,"io"));
-   % addpath(fullfile(root,"estimation"));
-   % addpath(fullfile(root,"data"));
-   % addpath(fullfile(root, "tests"));
 end

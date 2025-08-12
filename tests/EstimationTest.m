@@ -1,9 +1,11 @@
 fprintf("Running Estimation test...\n");
 
 
-fr  = FileReader();
-ps  = StudentParameterSetup(2);
-est = Estimation("Student",fr,ps);
+fileReader  = FileReader();
+parameterSetup  = LogNormalParameterSetup(100);
+est = Estimation("LogNormal",fr,ps);
 est.run();
 
 fprintf("Estimation tests passed\n");
+
+omega = outputHandler.get("omega");

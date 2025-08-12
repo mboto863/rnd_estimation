@@ -6,8 +6,9 @@ classdef Constants
         expirationPattern = "SPX7"; % Options that expire on the third friday of the month.
         minimumDaysToExpiration = 7; % Choose only options with more than 7 days to expiration.
         minimumRows  = 5; % Minimum number of rows to procceed with the estimation
-        tolTaylorA = 10 ^ -15; % Tolerance for Taylor series method A.
-        tolTaylorB = 10 ^ -15; % Tolerance for Taylor series method B.
+        tolTaylorA = 10 ^ (-12); % Tolerance for Taylor series method A.
+        tolTaylorB = 10 ^ (-12); % Tolerance for Taylor series method B.
+        tolSingleFraction = 10 ^ (-12);
         estimationVariables = ...
         [ColumnNamesConfig.timeToMaturity,...
         ColumnNamesConfig.optionType,...

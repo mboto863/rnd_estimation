@@ -146,8 +146,7 @@ classdef StudentParameterSetup < ParameterSetup
 
             switch name
                 case "omega"
-                    initialValue = 1 / obj.dimension * ones(1,...
-                        obj.dimension - 1);
+                    initialValue = (1 / obj.dimension) * ones(1, obj.dimension - 1);
                 case "mu"
                     [lowerBound, upperBound] = deal(obj.getLowerBound(name)...
                         ,obj.getUpperBound(name));
@@ -158,17 +157,23 @@ classdef StudentParameterSetup < ParameterSetup
                     end
                     initialValue = forwardPrice * ones(1, obj.dimension);
                 case "sigma"
+
                     [lowerBound, upperBound] = deal(obj.getLowerBound(name)...
                         ,obj.getUpperBound(name));
-                    idxAtTheMoney            = abs(...
-                        data.(c.strike) - data.(c.underlyingMid)(1))...
-                        == min(abs((data.(c.strike) - data.(c.underlyingMid)(1))));
-                    impliedVolatility        = data.(c.impliedVolatility)(find(idxAtTheMoney == 1, 1)...
-                        ) * data.(c.underlyingMid)(1);
-                    initialValue             = impliedVolatility * ones(...
-                        1, obj.dimension);
-                    if any(initialValue < lowerBound) ||...
-                            any(initialValue > upperBound)
+                    
+                    % All indices
+                    idx                  = 1 : numel(data.(c.strike));
+                    % Get the underlying mid price for the corresponding day.
+                    dayUnderlyingMid     = data.(c.underlyingMid)(1);
+                    % Indices for at the money options.
+                    idxAtTheMoney        = idx(abs(data.(c.strike) - dayUnderlyingMid) ==...
+                    min(abs(data.(c.strike) - dayUnderlyingMid)));
+                    % Just get the first implied volatilities, they are all the same.
+                    impliedVolatilityIdx = idxAtTheMoney(1);
+                    % Assuming implied volatility comes in percentage of the underlying mid price.
+                    impliedVolatility    = data.(c.impliedVolatility)(impliedVolatilityIdx) * dayUnderlyingMid;
+                    initialValue         = impliedVolatility * ones(1, obj.dimension);
+                    if any(initialValue < lowerBound) || any(initialValue > upperBound)
                         error('sigma initializer not within static bounds');
                     end
                 case "nu"
