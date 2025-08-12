@@ -106,10 +106,18 @@ classdef FileReader
         %
         % Output:
         %   root    Project root path.
-            try
-                root = matlab.project.rootProject().RootFolder;
-            catch
-                root = pwd; % Fallback to current working directory if project API fails
+
+            % Instanciate the matlab.project object for the root folder.
+            project = matlab.project.rootProject();
+
+            % If matlab's API is not able to initialize the project, get working directory.
+            if isempty(project)
+                root = pwd;
+            
+            else
+                % Project successfully initialized by matlab's API
+                root = project.RootFolder;
+
             end
         end
     end

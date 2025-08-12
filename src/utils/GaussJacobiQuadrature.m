@@ -16,37 +16,22 @@ classdef GaussJacobiQuadrature
                 return
             end
 
-            % Initialize vectors.
-            a = zeros(nPoints, 1);
-            b = zeros(nPoints - 1, 1);
+            % Construct tridiagonal matrix.
+            jacobiMatrix = diag(a) + diag(b, 1) + diag(b, -1);
 
-            % Compute crucial quantities
-            ab2 = 2+alpha+beta;
-            a(1) = (betaExponent - alphaExponent) / (2 + alphaExponent + betaExponent);
-            b(1) = sqrt((4 * (1 + alphaExponent) * (1 + betaExponent)) /...
-            ((3 + alphaExponent + betaExponent) * (2 + alphaExponent + betaExponent)^2));
+            % Get eigen vectors and eigen values of the Jacobi matrix.
+            [eigenVectors, eigenValues] = eig(jacobiMatrix);
 
-            % Compute components of vectors a and b
-            a2b2 = beta^2-alpha^2;
-            for i = 2 : (nPoints - 1)
-                ab2 = 2*i+alpha+beta;
-                a(i) = a2b2/((ab2-2)*ab2);
-                b(i) = sqrt((4*i*(i+alpha)*(i+beta)*(i+alpha+beta))/((ab2^2-1)*ab2^2));
-            end
-            ab2 = 2*N+alpha+beta;
-            a(N) = a2b2/((ab2-2)*ab2);
-
-            % Construct tridiagonal matrix
-            Matrix = diag(a)+diag(b,1)+diag(b,-1);
-
-            % Use eigenvalues and eigenvectors of matrix to compute nodes and weights
-            [evec,eval] = eig(Matrix);
-            weights = evec(1,:);
-            [nodes,index] = sort(diag(eval));
+            % Use eigenvalues and eigenvectors of matrix to compute nodes and weights.
+            weights = eigenVectors(1, :);
+            [nodes, index] = sort(diag(eigenValues));
             weights = weights(index);
             nodes = nodes';
-            weights = 2^(alpha+beta+1)*gamfun(alpha+1)*gamfun(beta+1)/ ...
-                gamfun(alpha+beta+2).*weights.^2;
+            weights =...
+            ((2 ^ (alphaExponent + betaExponent + 1)) *...
+            GammaCalculator.computeGammaFunction(alphaExponent + 1) *...
+            GammaCalculator.computeGammaFunction(betaExponent + 1)) /...
+            (GammaCalculator.computeGammaFunction(alphaExponent + betaExponent + 2) .* (weights .^ 2));
         end
     end
     methods (Static, Access = private)
@@ -65,23 +50,57 @@ classdef GaussJacobiQuadrature
             a = zeros(nPoints, 1);
             b = zeros(nPoints - 1, 1);
 
-            % Compute crucial quantities
-            ab2 = 2+alpha+beta;
-            a(1) = (betaExponent - alphaExponent) / (2 + alphaExponent + betaExponent);
-            b(1) = sqrt((4 * (1 + alphaExponent) * (1 + betaExponent)) /...
-            ((3 + alphaExponent + betaExponent) * (2 + alphaExponent + betaExponent)^2));
-
-            % Compute components of vectors a and b
-            a2b2 = beta^2-alpha^2;
-            for i = 2 : (nPoints - 1)
-                ab2 = 2*i+alpha+beta;
-                a(i) = a2b2/((ab2-2)*ab2);
-                b(i) = sqrt((4*i*(i+alpha)*(i+beta)*(i+alpha+beta))/((ab2^2-1)*ab2^2));
+            % Compute components of diagonals a and b.
+            for iComponent = 1 : (nPoints - 1) % b only has nPoints - 1 components.
+                [a(iComponent), b(iComponent)] = GaussJacobiQuadrature.computeComponent(alphaExponent, betaExponent, nPoints, iComponent);
             end
-            ab2 = 2*N+alpha+beta;
-            a(N) = a2b2/((ab2-2)*ab2);
+
+            [a(nPoints), ~] = GaussJacobiQuadrature.computeComponent(alphaExponent, betaExponent, nPoints, nPoints);
+        end
+        function [aComponent, bComponent] = computeComponent(alphaExponent, betaExponent, nPoints, iComponent)
+        %COMPUTECOMPONENT Computes the idxth component of the diagonals a and b.
+        %
+        % Input:
+        %   alphaExponent    The alpha exponent of the Gauss-Jacobi quadrature.
+        %   betaExponent     The beta exponent of the Gauss-Jacobi quadrature.
+        %   nPoints          Number of points of the Gauss-Jacobi quadrature.
+        %   iComponent       The index of the components to calculate.
+        %
+        % Output:
+        %   aComponent       The component idx of a.
+        %   bComponent       The component idx of b.
+
+            % Abstract this expression for readibility improvement
+            sumalphabeta2i = alphaExponent + betaExponent + (2 * iComponent);
+
+            switch iComponent
+                % The first component follows a different pattern.
+                case 1
+
+                    % Compute the components.
+                    aComponent    = (betaExponent - alphaExponent) / sumalphabeta2i;
+                    bComponent    = sqrt((4 * (1 + alphaExponent) * (1 + betaExponent)) /...
+                    ((sumalphabeta2i + 1) * (sumalphabeta2i)^2));
+
+                % b doesn't have an nth component.
+                case nPoints
+
+                    % Compute the components.
+                    aComponent = ((betaExponent ^ 2) - (alphaExponent ^ 2)) /...
+                    ((sumalphabeta2i - 2) * sumalphabeta2i);
+                    bComponent = NaN;
+
+                % Other components follow thea same pattern.
+                otherwise
+
+                    % Compute the components.
+                    aComponent = ((betaExponent ^ 2) - (alphaExponent ^ 2)) /...
+                    ((sumalphabeta2i - 2) * sumalphabeta2i);
+                    bComponent = sqrt(...
+                    (4 * iComponent * (iComponent + alphaExponent) * (iComponent + betaExponent) *...
+                    (iComponent + alphaExponent + betaExponent)) / ((sumalphabeta2i ^ 2 - 1) * sumalphabeta2i ^ 2));
+
+            end
         end
     end
 end
-
-

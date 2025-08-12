@@ -66,8 +66,8 @@ classdef GammaCalculator
             ((tempParameter * exp(-(z + g - 0.5))) * tempParameter);
 
             % Case where z is real.
-            if imag(z)==0
-                if z==fix(z) && real(z) <= 0 % z is a negative integer.
+            if imag(z) == 0
+                if z == fix(z) && real(z) <= 0 % z is a negative integer.
                     value = Inf;
                 else
                     value = real(value); % If z is real, then Gamma function is real.
@@ -84,6 +84,9 @@ classdef GammaCalculator
         %
         % Output:
         %   value    The value of the Gamma function up to tol.
+
+            % Number of terms to compute
+            N_TERMS = 172;
 
             % State Bernoulli numbers, which are involved in the series
             bernoulliNumbers = [1.000000000000000, -0.500000000000000, 0.166666666666667, 0, -0.033333333333333, 0,...
@@ -113,11 +116,11 @@ classdef GammaCalculator
             0];
 
             % Initialise variables.
-            summand   = zeros(172, 1);
+            summand   = zeros(N_TERMS, 1);
             seriesSum = 0;
 
             % Compute series.
-            for iTerm = 1 : 172
+            for iTerm = 1 : N_TERMS
                 summand(iTerm) = bernoulliNumbers(2 * iTerm + 1) / (2 * iTerm) / (2 * iTerm - 1)/ z ^ (2 * iTerm - 1);
                 seriesSum      = seriesSum + summand(iTerm);
                 
@@ -125,7 +128,7 @@ classdef GammaCalculator
                 if abs(summand(iTerm)) / abs(seriesSum) < tol && abs(summand(iTerm - 1)) / abs(seriesSum) < tol
                     break
                 end
-                if (iTerm == 172) % No convergence.
+                if (iTerm == N_TERMS) % No convergence.
                     [' ' num2str(iTerm) ' terms computed']
                     logGamma = (z - 0.5) * log(z) - z + 0.5 * log(2 * pi) + seriesSum;%+sum(summand);%sum;
                     value = exp(logGamma);
