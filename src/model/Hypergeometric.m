@@ -6,22 +6,27 @@ classdef Hypergeometric < handle
         c (1, :) double
         z (1, :) double
     end
+    properties (Access = private)
+        logger
+    end
     methods
-        function obj = Hypergeometric(lambda, a, b, c, z)
+        function obj = Hypergeometric(lambda, a, b, c, z, logger)
             arguments
                 lambda (1, 1) double
                 a (1, 1) double
                 b (1, 1) double
                 c (1, 1) double
                 z (1, 1) double
+                logger
             end
             obj.lambda = lambda;
             obj.a      = a;
             obj.b      = b;
             obj.c      = c;
             obj.z      = z;
+            obj.logger = logger;
         end
-        function approximation = approximate(obj)
+        function approximation = computeApproximation(obj)
         %APPROXIMATE Approximate the Gaussian Hypergeometric.
         %
         % Input:
@@ -40,7 +45,7 @@ classdef Hypergeometric < handle
     end
     methods (Access = private)
         % Transformation formulae
-        function obj = normalizez(obj)
+        function normalizez(obj)
         %NORMALIZEZ Applies a transformation formula to get the z argument inside the interval (0 , 1/2).
         %
         % Input:

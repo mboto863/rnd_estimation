@@ -53,31 +53,179 @@ classdef HypergeometricCalculator < handle
         % Output:
         %   approximation    The approximated value.
 
+            % The computational procedures depend on the parameter case.
             switch obj.id
+
+                % Parameter case I(A).
                 case "I(A)"
-                    approximation = obj.computeByTaylorA();
-                    if isnan(approximation)
-                        approximation = obj.computeByTaylorB();
-                        if isnan(approximation)
-                            approximation = obj.computeBySingleFraction();
-                            if isnan(approximation)
-                                % approximation = 
-                            else
-                                return
-                            end
-                        else
-                            return
-                        end
-                    else
-                        return
-                    end
-            otherwise
+                    approximation = obj.computeCaseIA();
+
+                % Parameter case I(B).
+                case "I(B)"
+                    approximation = obj.computeCaseIB();
+                
+                % Parameter case II.
+                case "II"
+                    approximation = obj.computeCaseII();
+
+                % Parameter case III.
+                case "III"
+                    approximation = obj.computeCaseIII();
+
+                otherwise
                 % Should not get here.
                 error('Invalid object id.')
             end
         end
     end
     methods (Access = protected)
+
+        % Computational procedures for parameter case III.
+        function approximation = computeCaseIII(obj)
+
+            % Check if c is too big to apply direct method.
+            if obj.c < -20
+
+
+            else
+
+            end
+        end
+
+        function approximation = computeByRecurrence00Plus(obj, type)
+
+            if type = "forwards"
+                approximation = obj.computeByRecurrence00PlusForwards();
+            elseif
+
+            else
+
+            end
+        end
+
+        % Forwards computation to the Gaussian Hypergeometric function
+        function approximation = computeByRecurrence00PlusForwards(obj)
+
+            
+            % function [rr] = hypfun_F_rec00plus_backward(a,b,c,z,n)
+            % 
+            % Computes the hypergeometric function \mathbf{F}(a,b;c-n;z), for n a large
+            % positive integer, using \mathbf{F}(a,b;c;z), \mathbf{F}(a,b;c-1;z) and a
+            % recurrence relation.
+            % 
+            % Copyright John W. Pearson 2014
+
+            % Use initial data
+            a1 = zeros(2,1);
+            a1(1) = hypergeom([a,b],c,z);
+            a1(2) = hypergeom([a,b],c-1,z);
+
+            % Apply recurrence relation
+            for j = 2:n
+                a1(j+1)=(-(c+1-j)*(c-j-(2*c+1-2*j-a-b)*z)*a1(j)- ...
+                    (c-a+1-j)*(c-b+1-j)*z*a1(j-1))/(c+1-j)/(c-j)/(z-1);
+            end
+
+            % Return solution
+            rr = GammaCalculator.computeGammaFunction(obj.c) * a1(end)/GammaCalculator.computeGammaFunction(c-n);
+
+        end
+        % Computational procedures for parameter case II.
+        function approximation = computeCaseII(obj)
+        %COMPUTECASEII Computes the Gaussian Hypergeometric function for parameter case II.
+        %
+        % Input:
+        %   obj    The HypergeometricCalculator object.
+        %
+        % Output:
+        %   approximation    An approximation to the Gaussian Hypergeometric function.
+
+            % Apply a transformation formula to reduce to case I.
+            lambda            = (1 - obj.z) ^ (obj.c - obj.a - obj.b);
+            aTransformed      = obj.c - obj.a;
+            bTransformed      = obj.c - obj.b;
+
+            % Create a new Hypergeometric object with the transformed parameters.
+            hypergeometric = Hypergeometric(lambda, aTransformed, bTransformed, obj.c, obj.z, obj.logger);
+            
+            % Compute approximation with transformed parameters.
+            approximation = hypergeometric.computeApproximation();
+        end
+
+        % Computational procedures for parameter case I(B).
+        function approximation = computeCaseIB(obj)
+            
+            % Are b - a or c - a - b close to an integer?
+            isCancellation = (abs(obj.b - obj.a) < 1e-12) || (abs(obj.c - obj.a - obj.b) < 1e-12);
+            if isCancellation
+                
+                % Just log for now, no method is implemented to solve this problem as of yet.
+                obj.logger.writeWarning("Cancelation problem. a: %d, b: %d, c: %d", obj.a, obj.b, obj.c);
+            
+            else
+                % No need to log.
+            end
+            
+            % Apply Taylor serie's method A.
+            approximation = obj.computeByTaylorA();
+
+            % No convergence.
+            if isnan(approximation)
+                            
+                % Apply Single Fraction method.
+                approximation = obj.computeBySingleFraction();
+
+                % No convergence.
+                if isnan(approximation)
+                                
+                    % Just log for now, no method is implemented to deal with this.
+                    obj.logger.writeError("Did not expect no convergence.");
+                            
+                else
+                    % Convergence.
+                    return
+                end
+            
+            else
+                % Convergence.
+                return
+
+            end
+        end
+
+        % Computational procedures for parameter case I(A).
+        function approximation = computeCaseIA(obj)
+        %COMPUTECASEIA Computes the Gaussian Hypergeometric function for the parameter case I(A).
+        %
+        % Input:
+        %   obj    The HypergeometricCalculator object.
+        %
+        % Output:
+        %   approximation    An approximation to the Gaussian Hypergeometric function.
+
+            % Apply Taylor serie's method A.
+            approximation = obj.computeByTaylorA();
+
+            % No convergence.
+            if isnan(approximation)
+
+                % Apply Single Fraction method.
+                approximation = obj.computeBySingleFraction();
+
+                % No convergence.
+                if isnan(approximation)
+
+                    % Apply Gauss Jacobi quadrature.
+                    approximation = obj.computeByGaussJacobiQuadrature();
+                else
+                    % Convergence.
+                    return
+                end
+            else
+                % Convergence.
+                return
+            end
+        end
         function approximation = computeByTaylorB(obj)
         %COMPUTEBYTAYLORB Computes the hypergeometric function using Taylor series method B up to a tolerance. The
         % nomenclature is as in Pearson.
@@ -149,7 +297,7 @@ classdef HypergeometricCalculator < handle
             gc = GammaCalculator();
 
             % Care if c is a non-positive integer.
-            isNonPositiveInteger = (obj.c == fix(obj.c)) && (obj.c <= 0);
+            isNonPositiveInteger = (abs(obj.c - fix(obj.c)) < 1e-12) && (obj.c <= 0);
             if isNonPositiveInteger
                 taylorTerm = (gc.computeGammaFunction(obj.a - obj.c + 1) * gc.computeGammaFunction(obj.b - obj.c + 1) *...
                 (obj.z ^ (-obj.c + 1))) / gc.computeGammaFunction(obj.a)  / gc.computeGammaFunction(obj.b) /...
@@ -206,16 +354,18 @@ classdef HypergeometricCalculator < handle
                     end
                 end
                 % If convergence achieved, return sum of terms computed
-                approximation = taylorSum / gc.computeGammaFunction(obj.c);
+                approximation = taylorSum;
             end
         end
         function approximation = computeBySingleFraction(obj)
-            % function [h] = hypfun_F_singlefraction(a,b,c,z,tol)
-            % 
-            % Computes the hypergeometric function \mathbf{F}(a,b;c;z), using a Taylor
-            % series (Method (c)), the single fraction method, up to a tolerance tol.
-            % 
-            % Copyright John W. Pearson 2014
+        %COMPUTEBYSINGLEFRACTION Computes the Gaussian Hypergeometric function up to a tol using the Single Fraction
+        % method.
+        %
+        % Input:
+        %   obj              The HypergeometricCalculator object.
+        %
+        % Output:
+        %   approximation    An approximation to the Gaussian Hypergeometric function.
 
             % Assign maximum number of iterations.
             MAX_ITER = 500;
@@ -268,7 +418,28 @@ classdef HypergeometricCalculator < handle
             end
 
             % If convergence achieved, return sum of terms computed
-            approximation = SSequence(end) / GammaCalculator.computeGammaFunction(obj.c);
+            approximation = SSequence(end);
+        end
+        function approximation = computeByGaussJacobiQuadrature(obj, nPoints)
+        %COMPUTEBYGAUSSJACOBIQUADRATURE Computes the Gaussian Hypergeometric function by the Gauss Jacobi
+        % Quadrature method.
+        %
+        % Input:
+        %   obj              The HypergeometricCalculator object.
+        %   nPoints          The number of points to use for the quadrature.
+        %
+        % Output:
+        %   approximation    An approximation to the Gaussian Hypergeometric function.
+
+            % Compute Gauss-Jacobi quadrature nodes and weights.
+            [nodes ,weights] = GaussJacobiQuadrature.computeNodesWeights(obj.c - obj.b - 1,obj.b - 1, nPoints);
+
+            % Compute the Hypergeometric function using its integral representation.
+            approximation = GammaCalculator.computeGammaFunction(obj.c) *...
+            (sum(weights .* ((1 - ((obj.z  * (nodes + 1)) / 2)) .^ (-obj.a))) /...
+            GammaCalculator.computeGammaFunction(obj.b) /...
+            GammaCalculator.computeGammaFunction(obj.c - obj.b) /...
+            (2 ^ (obj.c - 1)));
         end
     end
 end

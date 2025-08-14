@@ -16,6 +16,9 @@ classdef GaussJacobiQuadrature
                 return
             end
 
+            % Compute diagonals of the Jacobi matrix.
+            [a, b] = GaussJacobiQuadrature.computeDiagonals(alphaExponent, betaExponent, nPoints);
+
             % Construct tridiagonal matrix.
             jacobiMatrix = diag(a) + diag(b, 1) + diag(b, -1);
 

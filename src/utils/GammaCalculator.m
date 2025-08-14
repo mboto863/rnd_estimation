@@ -14,7 +14,7 @@ classdef GammaCalculator
             if real(z) < 0.5 % Apply transformation.
                 value = pi / (sin(pi * z) * computeGammaFunction(1 - z));
                 return
-            elseif imag(z) == 0 && real(z) > 0.5 && real(z) == fix(real(z)) % Integer case.
+            elseif (imag(z) == 0) && (real(z) > 0.5) && (abs(real(z) - fix(real(z))) < 1e-12) % Integer case.
                 value = factorial(z - 1); % Use built-in MATLAB routine.
             elseif abs(z) > 80
                 value = computeByStirling(z, eps);
@@ -67,7 +67,7 @@ classdef GammaCalculator
 
             % Case where z is real.
             if imag(z) == 0
-                if z == fix(z) && real(z) <= 0 % z is a negative integer.
+                if (abs(z - fix(z)) < 1e-12) && (real(z) <= 0) % z is a negative integer.
                     value = Inf;
                 else
                     value = real(value); % If z is real, then Gamma function is real.

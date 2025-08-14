@@ -1,4 +1,4 @@
-classdef FileReader
+classdef FileReader < handle
     properties
         folderPath
     end
@@ -86,10 +86,8 @@ classdef FileReader
             filtered = filtered(filtered.(c.maturity) == filtered.(c.maturity)(1), :);
             
             % Filter for variables not used in the estimation.
-            estimationVariables = [];
-            for variable = Constants.estimationVariables
-                estimationVariables = [estimationVariables, variable];
-            end
+            estimationVariables = Constants.estimationVariables;
+
             filtered = filtered(:, estimationVariables);
             % check if enough data
             if height(filtered) <= Constants.minimumRows

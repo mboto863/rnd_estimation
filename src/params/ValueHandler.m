@@ -11,7 +11,9 @@ classdef ValueHandler < handle
                 names (1, :) cell {mustBeCellOfChar}
                 values (1, :)
             end
-            obj.names    = names;
+
+            % Variable names.
+            obj.names = names;
 
             % There is a limitation here, the first parameter is assumed to be omega.
             % The last component of omega is redundant, so store the other ones.
@@ -38,16 +40,27 @@ classdef ValueHandler < handle
                 obj ValueHandler
                 vector (1, :)
             end
+
+            % Check if the object lengths is consistent with the provided vector.
             if sum(obj.lengths) ~= numel(vector)
                 error('Input vector length does not match expected total parameter size')
             end
+
+            % Index variable to assign the parameter values on each loop.
             idx = 1;
-            for iPar = 1 : numel(obj.names)
-                name             = obj.names{iPar};
-                length           = obj.lengths(iPar);
-                obj.state.(name) = vector(idx : idx + length - 1);
+
+            for iParameter = 1 : numel(obj.names)
+                % Get the ith parameter's name.
+                name                      = obj.names{iParameter};
+
+                % Get the ith parameter's length.
+                parameterLength           = obj.lengths(iParameter);
+
+                % Update the state of the ith parameter.
+                obj.state.(name)          = vector(idx : ((idx + parameterLength) - 1));
                 
-                idx = idx + length;
+                % Update the index.
+                idx = idx + parameterLength;
             end
         end
         function vector = getVector(obj)
@@ -59,11 +72,29 @@ classdef ValueHandler < handle
         % Output:
         %   vector  A vector of the parameter values.
 
-            vector = [];
-            for iPar = 1 : numel(obj.names)
-                name   = obj.names{iPar};
-                value  = obj.state.(name);
-                vector = [vector, value(:)']; %ensure row vector for consistency
+            % Initialize vector and preallocate memory.
+            vector = nan(1, sum(obj.lengths));
+
+            % Index variable to define vector components to update on each loop.
+            idx = 1;
+
+            % Assign each parameter to the vector's corresponding components.
+            for iParameter = 1 : numel(obj.names)
+                
+                % Get the ith parameter name
+                name            = obj.names{iParameter};
+
+                % Get the ith parameter value.
+                value           = obj.state.(name);
+                
+                % Get the ith parameter length.
+                parameterLength = obj.lengths(iParameter);
+
+                % Assign the value to the vector's corresponding components.
+                vector(idx : ((idx + parameterLength) - 1)) = value(:)'; % Ensure row vector for consistency.
+                
+                % Update the index.
+                idx = idx + parameterLength;
             end
         end
         function structured = getStructure(obj)
