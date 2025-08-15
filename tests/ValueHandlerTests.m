@@ -2,6 +2,7 @@ classdef ValueHandlerTests < matlab.unittest.TestCase
     properties
         valueHandler
     end
+    
     % Class based setup.
     methods (TestMethodSetup)
         

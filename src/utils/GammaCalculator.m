@@ -1,4 +1,4 @@
-classdef GammaCalculator
+classdef GammaCalculator < handle
     methods (Static)
         function value = computeGammaFunction(z)
             %COMPUTEGAMMAFUNCTION Master function for computing the Gamma function. Uses Godfrey (Lanczos) and Stirling

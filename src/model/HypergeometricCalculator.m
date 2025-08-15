@@ -66,11 +66,18 @@ classdef HypergeometricCalculator < handle
                 
                 % Parameter case II.
                 case "II"
-                    approximation = obj.computeCaseII();
+                    approximation = obj.computeCaseIIOrIV();
 
                 % Parameter case III.
                 case "III"
                     approximation = obj.computeCaseIII();
+
+                % Parameter case IV.
+                case "IV"
+                    approximation = obj.computeCaseIIOrIV();
+
+                % Parameter case V
+                case "V"
 
                 otherwise
                 % Should not get here.
@@ -80,59 +87,173 @@ classdef HypergeometricCalculator < handle
     end
     methods (Access = protected)
 
+        % Computational procedures for parameter case V.
+        function approximation = computeCaseV(obj)
+
+        end
+
         % Computational procedures for parameter case III.
         function approximation = computeCaseIII(obj)
 
             % Check if c is too big to apply direct method.
             if obj.c < -20
 
+                % Reduce to another parameter case through recurrence relation.
+                approximation = obj.computeByRecurrence00Plus("forwards");
+
+            else
+
+                % Apply Taylor series method A.
+                approximation = obj.computeByTaylorA();
+
+                % No convergence from Taylor series method A.
+                if isnan(approximation)
+
+                    % Apply Single Fraction method.
+                    approximation = obj.computeBySingleFraction();
+
+                    % No convergence from Single Fraction method.
+                    if isnan(approximation)
+                        obj.logger.writeError("Case III: Did not expect lack of convergence.");
+                    else
+                        % Convergence.
+                        return
+
+                    end
+                else
+                    % Convergence.
+                    return
+
+                end
+            end
+        end
+        function approximation = computeByRecurrence00Plus(obj, shift)
+
+            % Shift c forwards.
+            if shift == "forwards"
+
+                % Apply a backwards recurrence relation.
+                approximation = obj.computeByRecurrence00PlusBackwards();
+
+            elseif 
 
             else
 
             end
         end
 
-        function approximation = computeByRecurrence00Plus(obj, type)
-
-            if type = "forwards"
-                approximation = obj.computeByRecurrence00PlusForwards();
-            elseif
-
-            else
-
-            end
-        end
-
-        % Forwards computation to the Gaussian Hypergeometric function
+        % Forwards computation of the Hypergeometric function.
         function approximation = computeByRecurrence00PlusForwards(obj)
+            %function [h] = hypfun_F_rec00plus_olver(a,b,c,z,k)
+            % 
+            % Computes the hypergeometric function \mathbf{F}(a,b;c+k;z), for k a large
+            % positive integer, using \mathbf{F}(a,b;c;z) and Olver's algorithm. Note
+            % that Re(z) must be < 1/2.
+            % 
+            % Copyright John W. Pearson 2014
 
-            
+            % Set tolerance
+            TOL = eps;
+
+            % Number of terms to shift.
+            % We try to get c close to 0.3, which seems to provide the best results according to Pearson et al.(2017).
+            nTerms = int32(fix(obj.c - 0.3));
+
+            % Determine optimum value of N.
+            p = [1, -(obj.c - nTerms + 1) *...
+                (obj.c - nTerms + ((-2 * (obj.c - nTerms + 1)) + obj.a + obj.b + 1) * obj.z) /...
+                ((obj.c - nTerms - obj.a + 1) *...
+                (obj.c - nTerms - obj.b + 1) *...
+                obj.z)];
+            % Reduced parameter case. 
+            fZeroHypergeometric = Hypergeometric(1, obj.a, obj.b, obj.c - nTerms, obj.z, obj.logger);
+            fZero = hypergeom([a,b],c,z);
+            r = [c*(c+1)*(z-1)*fZero/((c-a+1)*(c-b+1)*z), ...
+                c*(c+1)^2*(c+2)*(z-1)^2*fZero/((c-a+1)*(c-a+2)*(c-b+1)*(c-b+2)*z^2)];
+            maxpj = 0;
+            for j = 2:1000
+                p(j+1) = -(c+j)*(c+j-1)*(z-1)*p(j-1)/((c-a+j)*(c-b+j)*z)- ...
+                    (c+j)*(c+j-1-(2*(c+j)-a-b-1)*z)*p(j)/((c-a+j)*(c-b+j)*z);
+                r(j+1) = (c+j)*(c+j+1)*(z-1)*r(j)/((c-a+j+1)*(c-b+j+1)*z);
+                maxpj = max(maxpj,abs(p(j-1)));
+                if abs(r(j)/(p(j)*p(j+1)))*maxpj < TOL
+                    break
+                end
+            end
+
+            % Set condition on application of algorithm
+            N = j;
+            if k >= N
+                ['Method will not work, as k is too large for backward recurrence to be applied']
+            end
+
+            % Apply back substitution
+            f = zeros(N-1,1);
+            f(N-1) = r(N-1)/p(N);
+            for j = N-2:-1:k
+                f(j) = (r(j)+p(j)*f(j+1))/p(j+1);
+            end
+
+            % Return solution
+            h = f(k)/gamfun(c+k);
+        end
+        % Backwards computation to the Gaussian Hypergeometric function
+        function approximation = computeByRecurrence00PlusBackwards(obj)
+        %COMPUTEBYRECURRENCE00PLUSBACKWARDS Reduces the computation of the Hypergeometric function to a parameter case
+        % with c close to 0.3.
+        %
+        % Input:
+        %   obj    The HypergeometricCalculator object.
+        %
+        % Output:
+        %   approximation    An approximation to the Hypergeometric function.
+
             % function [rr] = hypfun_F_rec00plus_backward(a,b,c,z,n)
             % 
             % Computes the hypergeometric function \mathbf{F}(a,b;c-n;z), for n a large
             % positive integer, using \mathbf{F}(a,b;c;z), \mathbf{F}(a,b;c-1;z) and a
             % recurrence relation.
-            % 
-            % Copyright John W. Pearson 2014
 
-            % Use initial data
-            a1 = zeros(2,1);
-            a1(1) = hypergeom([a,b],c,z);
-            a1(2) = hypergeom([a,b],c-1,z);
+            % Number of terms to shift.
+            % We try to get c close to 0.3, which seems to provide the best results according to Pearson et al. (2017).
+            nTerms = int32(fix(0.3 - obj.c));
 
-            % Apply recurrence relation
-            for j = 2:n
-                a1(j+1)=(-(c+1-j)*(c-j-(2*c+1-2*j-a-b)*z)*a1(j)- ...
-                    (c-a+1-j)*(c-b+1-j)*z*a1(j-1))/(c+1-j)/(c-j)/(z-1);
+            % Preallocate recurrence relation's solution.
+            recurrenceSolution = nan(nTerms, 1);
+
+            % First terms Hypergeometric objects.
+            firstTermHypergeometric   = Hypergeometric(1, obj.a, obj.b, obj.c + nTerms, obj.z, obj.logger);
+            secondTermHypergeometric  = Hypergeometric(1, obj.a, obj.b, obj.c + nTerms - 1, obj.z, obj.logger);
+
+            % Fill in first 2 solutions.
+            recurrenceSolution(1) = firstTermHypergeometric.computeApproximation();
+            recurrenceSolution(2) = secondTermHypergeometric.computeApproximation();
+
+            % Propagate the recurrence relation forward.
+            for iTerm = 2 : nTerms
+
+                % Apply recurrence relation.
+                recurrenceSolution(iTerm + 1) =...
+                    ((-(obj.c + nTerms + 1 - iTerm) *...
+                    (obj.c + nTerms - iTerm - ((2 * obj.c) + nTerms + 1 - (2 * iTerm) - obj.a - obj.b) * obj.z) *...
+                    recurrenceSolution(iTerm)) -...
+                    ((obj.c + nTerms - obj.a + 1 - iTerm) *...
+                    (obj.c + nTerms - obj.b + 1 - iTerm) *...
+                    obj.z * recurrenceSolution(iTerm - 1)) /...
+                    (obj.c + nTerms + 1 - iTerm) /...
+                    (obj.c + nTerms - iTerm) /...
+                    (obj.z - 1));
+            
             end
 
             % Return solution
-            rr = GammaCalculator.computeGammaFunction(obj.c) * a1(end)/GammaCalculator.computeGammaFunction(c-n);
+            approximation = recurrenceSolution(nTerms);
 
         end
-        % Computational procedures for parameter case II.
-        function approximation = computeCaseII(obj)
-        %COMPUTECASEII Computes the Gaussian Hypergeometric function for parameter case II.
+
+        % Computational procedures for parameter cases II and IV.
+        function approximation = computeCaseIIOrIV(obj)
+        %COMPUTECASEII Computes the Gaussian Hypergeometric function for parameter cases II and IV.
         %
         % Input:
         %   obj    The HypergeometricCalculator object.

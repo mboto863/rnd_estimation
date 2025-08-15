@@ -1,62 +1,62 @@
 classdef OutputHandler < handle
     properties
-        logs struct = struct();
+        logbook struct = struct();
     end
     methods
-        function addEntry(obj, name, value, day)
-        %ADDENTRY   Adds a log entry.
+        function addRecord(obj, clause, state, day)
+        %ADDRECORD   Adds a log record.
         %
         % Input:
-        %   obj     The OutputHandler object.
-        %   name    The name of the log entry.
-        %   value   The value of the log entry.
-        %   day     The day of the log entry.
+        %   obj       The OutputHandler object.
+        %   clause    The clause of the logbook from which a new record should be added.
+        %   state     The state of the clause at time day.
+        %   day       The day of the log record.
         %
         % Output:
         %
 
             arguments
                 obj OutputHandler
-                name string
-                value
+                clause string
+                state
                 day (1, 1) double
             end
-            if ~isfield(obj.logs, name)
-                obj.logs.(name) = containers.Map('KeyType', 'double',...
+            if ~isfield(obj.logbook, clause)
+                obj.logbook.(clause) = containers.Map('KeyType', 'double',...
                     'ValueType', 'any');
             end
-            obj.logs.(name)(day) = value;
+            obj.logbook.(clause)(day) = state;
         end
-        function records = getRecords(obj, name)
-        %GETRECORDS Retrieve the logged outputs
+        function records = getClauseRecords(obj, clause)
+        %GETCLAUSERECORDS(OBJ, CLAUSE) Retrieve the logged outputs from clause CLAUSE.
         %
         % Input:
-        %   obj         The OutputHandler object.
-        %   name        The Name of the log entries to retrieve.
+        %   obj           The OutputHandler object.
+        %   clause        The clause defines the section in the logbook from which retrieval is to take place. 
         %
         % Output:
-        %   records     The records of the logbook.
+        %   records       The records of the logbook.
 
             arguments
                 obj OutputHandler
-                name string
+                clause string
             end
-            if isfield(obj.logs, name)
-                records = obj.logs.(name);
+            if isfield(obj.logbook, clause)
+                records = obj.logbook.(clause);
             else
-                error('Output not found for name=%s', name)
+                error('Output not found for clause=%s', clause)
             end
         end
-        function records = getAllRecords(obj)
-        %GETALLRECORDS Retrieves all the records.
+        function logbook = getLogbook(obj)
+        %GETLOGBOOK Retrieves the logbook.
         %
         % Input:
         %   obj         The OutputHandler object.
         %
         % Output:
-        %   records     The records.
+        %   logbook     The logbook.
         
-            records = obj.logs;
+            logbook = obj.logbook;
         end
     end
 end
