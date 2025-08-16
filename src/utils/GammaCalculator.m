@@ -12,14 +12,14 @@ classdef GammaCalculator < handle
             %   value    The value of the Gamma function
 
             if real(z) < 0.5 % Apply transformation.
-                value = pi / (sin(pi * z) * computeGammaFunction(1 - z));
+                value = pi / (sin(pi * z) * GammaCalculator.computeGammaFunction(1 - z));
                 return
             elseif (imag(z) == 0) && (real(z) > 0.5) && (abs(real(z) - fix(real(z))) < 1e-12) % Integer case.
                 value = factorial(z - 1); % Use built-in MATLAB routine.
             elseif abs(z) > 80
-                value = computeByStirling(z, eps);
+                value = GammaCalculator.computeByStirling(z, eps);
             else
-                value = computeByGodfrey(z);
+                value = GammaCalculator.computeByGodfrey(z);
             end
         end
         function value = computeByGodfrey(z)
@@ -57,8 +57,8 @@ classdef GammaCalculator < handle
 
             % Sum series.
             seriesSum = 0;
-            for iTerm = length(coefficients) - 1 : -1 : 1
-                seriesSum = seriesSum + c(iTerm + 1) / (z + iTerm - 1);
+            for iTerm = (length(coefficients) - 1) : -1 : 1
+                seriesSum = seriesSum + coefficients(iTerm + 1) / (z + iTerm - 1);
             end
 
             % Use series sum to compute Gamma function.
