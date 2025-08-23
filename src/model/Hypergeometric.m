@@ -22,33 +22,40 @@ classdef Hypergeometric < handle
             obj.z      = z;
         end
         function approximation = computeApproximation(obj)
-        %APPROXIMATE Approximate the Gaussian Hypergeometric.
-        %
-        % Input:
-        %   obj              The Hypergeometric object.
-        %
-        % Output:
-        %   approximation    The approximation value.
-
+            %APPROXIMATE Approximate the Gaussian Hypergeometric.
+            %
+            % Input:
+            %   obj              The Hypergeometric object.
+            %
+            % Output:
+            %   approximation    The approximation value.
+            
+            % Get z to (0, 1/2).
             obj.normalizez();
+            
+            % Is a mixture.
             if size(obj.a, 2) > 1
                 approximation = HypergeometricMixture(obj.lambda, obj.a, obj.b, obj.c, obj.z).ComputeMixture();
+                
             else
-                approximation = obj.SingleFraction();
+                % Is a single hypergeometric.
+                hypergeometricCalculator = HypergeometricCalculator(obj.a, obj.b, obj.c, obj.z);
+                approximation = obj.lambda * hypergeometricCalculator.computeApproximation();
+                
             end
         end
     end
     methods (Access = private)
         % Transformation formulae
         function normalizez(obj)
-        %NORMALIZEZ Applies a transformation formula to get the z argument inside the interval (0 , 1/2).
-        %
-        % Input:
-        %   obj    The Hypergeometric object.
-        %
-        % Output:
-        %   obj    The Hypergeometric object.
-
+            %NORMALIZEZ Applies a transformation formula to get the z argument inside the interval (0 , 1/2).
+            %
+            % Input:
+            %   obj    The Hypergeometric object.
+            %
+            % Output:
+            %   obj    The Hypergeometric object.
+            
             if (0 <= obj.z) && (obj.z <= 1 / 2)
                 return
             elseif obj.z < -1
@@ -62,7 +69,7 @@ classdef Hypergeometric < handle
                     gamma(temp.c) * gamma(temp.a - temp.b) /...
                     gamma(temp.a) / gamma(temp.c - temp.b)...
                     ];
-                obj.a      = [temp.a, temp.b];                
+                obj.a      = [temp.a, temp.b];
                 obj.b      = [temp.c - temp.b, temp.c - temp.a];
                 obj.c      = [temp.a - temp.b + 1, temp.b - temp.a + 1];
                 obj.z      = [1 / (1 - temp.z), 1 / (1 - temp.z)];
@@ -115,20 +122,20 @@ classdef Hypergeometric < handle
                 obj.a      = [temp.a, temp.c - temp.a];
                 obj.b      = [temp.b, temp.c - temp.b];
                 obj.c      = [temp.a + temp.b - temp.c + 1, temp.c - temp.a - temp.b + 1];
-                obj.z      = [1 - temp.z, 1 - temp.z]; 
+                obj.z      = [1 - temp.z, 1 - temp.z];
             end
         end
         % Numerical methods for approximating hypergeometric value
         function value = SingleFraction(obj)
-        %SINGLEFRACTION Computes an approximation to the Gaussian Hypergeometric function by the Single
-        % Fraction method
-        %
-        % Input:
-        %   obj     The Hypergeometric object.
-        %
-        % Output:
-        %   value   An approximation the the Gaussian Hypergeometric function.
-        
+            %SINGLEFRACTION Computes an approximation to the Gaussian Hypergeometric function by the Single
+            % Fraction method
+            %
+            % Input:
+            %   obj     The Hypergeometric object.
+            %
+            % Output:
+            %   value   An approximation the the Gaussian Hypergeometric function.
+            
             tolerance  = 10 ^ -15; % Stop iterative proccess when tolerance is reached.
             alphaValue = 0; % Initial alpha value.
             betaValue  = 1; % Initial beta value.
@@ -160,18 +167,18 @@ classdef Hypergeometric < handle
                 
                 iIteration = iIteration + 1;
             end
-            value = zetaValue(4);          
+            value = zetaValue(4);
         end
-
+        
         
         function argumentValues = getArguments(obj)
-        %GETARGUMENTS Retrieves the arguments of the Gaussian Hypergeometric (along with the multiplication scalar).
-        %
-        % Input:
-        %   obj               The Hypergeometric object.
-        %
-        % Output:
-        %   argumentValues    The arguments.
+            %GETARGUMENTS Retrieves the arguments of the Gaussian Hypergeometric (along with the multiplication scalar).
+            %
+            % Input:
+            %   obj               The Hypergeometric object.
+            %
+            % Output:
+            %   argumentValues    The arguments.
             argumentValues = struct(...
                 "lambda", obj.lambda,...
                 "a", obj.a,...
@@ -179,12 +186,6 @@ classdef Hypergeometric < handle
                 "c", obj.c,...
                 "z", obj.z...
                 );
-        end
-    end
-    methods (Static, Access = private)
-        % Numerical methods for solving recurrence relations
-        function millerAlgorithm(N, a0, a1)
-
         end
     end
 end

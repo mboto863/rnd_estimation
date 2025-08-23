@@ -1,7 +1,87 @@
-[11-Aug-2025 17:20:30] [INFO] Logger started at 11-Aug-2025 17:20:30
-[11-Aug-2025 17:20:30] [INFO] This is info
-[11-Aug-2025 17:20:30] [WARNING] This is a warning
-[11-Aug-2025 17:20:30] [ERROR] This is an error
-[11-Aug-2025 17:20:30] [INFO] x is 1
-[11-Aug-2025 17:20:30] [WARNING] x is 1
-[11-Aug-2025 17:20:30] [ERROR] x is 1
+[17-Aug-2025 12:02:46] [INFO] About to start TaylorA
+[17-Aug-2025 12:02:46] [INFO] calculator's output: 1, built-in output: 1.000000e+00
+[17-Aug-2025 12:03:21] [INFO] About to start TaylorA
+[17-Aug-2025 12:03:22] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:08:24] [INFO] nTerms: 29
+[17-Aug-2025 12:08:24] [INFO] About to start TaylorA
+[17-Aug-2025 12:08:24] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:11:41] [INFO] nTerms: 29
+[17-Aug-2025 12:11:41] [INFO] About to start TaylorA
+[17-Aug-2025 12:11:41] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:11:41] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:15:21] [INFO] nTerms: 29
+[17-Aug-2025 12:15:21] [INFO] About to start TaylorA
+[17-Aug-2025 12:15:21] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:19:01] [INFO] nTerms: 20
+[17-Aug-2025 12:19:01] [INFO] About to start TaylorA
+[17-Aug-2025 12:19:01] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:20:09] [INFO] nTerms: 20
+[17-Aug-2025 12:20:09] [INFO] About to start TaylorA
+[17-Aug-2025 12:20:09] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:20:09] [INFO] calculator's output: 1, built-in output: 1.000000e+00
+[17-Aug-2025 12:21:02] [INFO] nTerms: 20
+[17-Aug-2025 12:21:02] [INFO] About to start TaylorA
+[17-Aug-2025 12:21:02] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:21:02] [INFO] calculator's output: 1, built-in output: 1.000000e+00
+[17-Aug-2025 12:21:08] [INFO] nTerms: 29
+[17-Aug-2025 12:21:08] [INFO] About to start TaylorA
+[17-Aug-2025 12:21:08] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:21:08] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:21:24] [INFO] nTerms: 29
+[17-Aug-2025 12:21:24] [INFO] About to start TaylorA
+[17-Aug-2025 12:21:24] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:21:24] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:21:44] [INFO] nTerms: 29
+[17-Aug-2025 12:21:44] [INFO] About to start TaylorA
+[17-Aug-2025 12:21:44] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:21:44] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:22:04] [INFO] nTerms: 29
+[17-Aug-2025 12:22:04] [INFO] About to start TaylorA
+[17-Aug-2025 12:22:04] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:22:04] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:23:37] [INFO] nTerms: 29
+[17-Aug-2025 12:23:37] [INFO] About to start TaylorA
+[17-Aug-2025 12:23:37] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:35:05] [INFO] original p(2): 2.857146e-01
+[17-Aug-2025 12:35:30] [INFO] nTerms: 29
+[17-Aug-2025 12:35:30] [INFO] Calculator's p(2): 0
+[17-Aug-2025 12:35:30] [INFO] About to start TaylorA
+[17-Aug-2025 12:35:30] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:36:55] [INFO] original p(2): 2.857146e-01
+[17-Aug-2025 12:36:55] [INFO] original c is: 1
+[17-Aug-2025 12:37:14] [INFO] nTerms: 29
+[17-Aug-2025 12:37:14] [INFO] reduced c is 1
+[17-Aug-2025 12:37:14] [INFO] Calculator's p(2): 0
+[17-Aug-2025 12:37:14] [INFO] About to start TaylorA
+[17-Aug-2025 12:37:14] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:37:14] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:41:42] [INFO] nTerms: 29
+[17-Aug-2025 12:41:42] [INFO] reduced c is 1
+[17-Aug-2025 12:41:42] [INFO] Calculator's p(2): 0
+[17-Aug-2025 12:41:42] [INFO] About to start TaylorA
+[17-Aug-2025 12:41:42] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:41:42] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:51:21] [INFO] nTerms: 29
+[17-Aug-2025 12:51:21] [INFO] parameter classes: obj.a: double, obj.b: double, reducedc: int32, obj.z: double
+[17-Aug-2025 12:51:21] [INFO] reduced c is 1
+[17-Aug-2025 12:51:21] [INFO] Calculator's p(2): 0
+[17-Aug-2025 12:51:21] [INFO] About to start TaylorA
+[17-Aug-2025 12:51:21] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:51:21] [INFO] calculator's output: 0, built-in output: 1.000000e+00
+[17-Aug-2025 12:51:32] [INFO] originalOlver parameter's classes: a: double, b: double, c: double, z: double
+[17-Aug-2025 12:51:32] [INFO] original p(2): 2.857146e-01
+[17-Aug-2025 12:51:32] [INFO] original c is: 1
+[17-Aug-2025 12:53:33] [INFO] nTerms: 29
+[17-Aug-2025 12:53:33] [INFO] calculator's parameter classes: obj.a: double, obj.b: double, reducedc: double, obj.z: double
+[17-Aug-2025 12:53:33] [INFO] reduced c is 1
+[17-Aug-2025 12:53:33] [INFO] Calculator's p(2): 2.857146e-01
+[17-Aug-2025 12:53:33] [INFO] About to start TaylorA
+[17-Aug-2025 12:53:33] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:53:33] [INFO] calculator's output: 1.000000e+00, built-in output: 1.000000e+00
+[17-Aug-2025 12:53:50] [INFO] nTerms: 39
+[17-Aug-2025 12:53:50] [INFO] calculator's parameter classes: obj.a: double, obj.b: double, reducedc: double, obj.z: double
+[17-Aug-2025 12:53:50] [INFO] reduced c is 1
+[17-Aug-2025 12:53:50] [INFO] Calculator's p(2): 2.857146e-01
+[17-Aug-2025 12:53:50] [INFO] About to start TaylorA
+[17-Aug-2025 12:53:50] [INFO] fZero: 1.000000e+00, from calculator with parameters lambda: 1, a: -1.000000e-01, b: -1.000000e-06, reducedc: 1, z: 4.000000e-01
+[17-Aug-2025 12:53:50] [INFO] calculator's output: 1.000000e+00, built-in output: 1.000000e+00

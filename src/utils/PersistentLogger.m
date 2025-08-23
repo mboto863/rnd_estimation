@@ -28,6 +28,30 @@ classdef PersistentLogger < handle
                 obj.writeInfo("Logger started at %s", datetime("now"));
             end
         end
+        
+        % Write to the logbook.
+        function writeToLogBook(obj, level, message, varargin)
+            %WRITELOG Adds a log entry to the log book.
+            %
+            % Input:
+            %   obj    The Logger object.
+            %   level    The level of the log.
+            %   message    The message to log.
+            %   varargin    Any extra parameters to be included in the message.
+            %
+            % Output:
+            %
+            
+            timestamp   = datetime("now");
+            fullMessage = sprintf(message, varargin{:});
+            logEntry    = sprintf("[%s] [%s] %s", timestamp, level, fullMessage);
+            
+            % Print to console
+            fprintf("%s\n", logEntry);
+            
+            % Write in the log book.
+            fprintf(obj.logFileId, "%s\n", logEntry);
+        end
     end
     methods
         function writeInfo(obj, message, varargin)
@@ -81,7 +105,7 @@ classdef PersistentLogger < handle
             end
         end
     end
-    methods (Access = private)
+    methods (Static)
         
         % This is a persistent logger. Construction needs to pass through this getter.
         function obj = getInstance(logFilePath)
@@ -99,35 +123,26 @@ classdef PersistentLogger < handle
             % Should an instance be created?
             isToCreate = isempty(uniqueInstance) || ~isvalid(uniqueInstance);
             if isToCreate
-                uniqueInstance = PersistentLogger(logFilePath);
+                
+                % If no file path given.
+                if nargin < 1
+                    uniqueInstance = PersistentLogger();
+                    
+                else
+                    % File path given.
+                    uniqueInstance = PersistentLogger(logFilePath);
+                    
+                end
                 
             else
-                % Give the logger.
-                obj = uniqueInstance;
+                % Logger instance is active.
                 
             end
+            
+            % Give the logger.
+            obj = uniqueInstance;
+            
         end
-        function writeToLogBook(obj, level, message, varargin)
-            %WRITELOG Adds a log entry to the log book.
-            %
-            % Input:
-            %   obj    The Logger object.
-            %   level    The level of the log.
-            %   message    The message to log.
-            %   varargin    Any extra parameters to be included in the message.
-            %
-            % Output:
-            %
-            
-            timestamp   = datetime("now");
-            fullMessage = sprintf(message, varargin{:});
-            logEntry    = sprintf("[%s] [%s] %s", timestamp, level, fullMessage);
-            
-            % Print to console
-            fprintf("%s\n", logEntry);
-            
-            % Write in the log book.
-            fprintf(obj.logFileId, "%s\n", logEntry);
-        end
+        
     end
 end

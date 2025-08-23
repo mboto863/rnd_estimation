@@ -38,7 +38,7 @@ classdef HypergeometricCalculator < handle
                 error('Unexpected parameter combination for the Hypergeometric calculator.')
             end
         end
-        function approximation = computeHypergeometric(obj)
+        function approximation = computeApproximation(obj)
             %COMPUTEHYPERGEOMETRIC Approximates the Gauss hypergeometric function, assumes |z| < 1 / 2
             %
             % Input:
@@ -72,36 +72,107 @@ classdef HypergeometricCalculator < handle
                     
                     % Parameter case V
                 case "V"
+                    approximation = obj.computeCaseV();
                     
+                    % Parameter case VI
+                case "VI"
+                    approximation = obj.computeCaseVI();
                 otherwise
                     % Should not get here.
                     error('Invalid object id.')
             end
         end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function approximation = publicOlver(obj)
+            
+            % Call the private Olver.
+            approximation = obj.computeByRecurrence00PlusForwardsByOlver();
+            
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
     methods (Access = protected)
         
+        % Computational procedures for parameter case VI.
+        function approximation = computeCaseVI(obj)
+            
+            % Check if c is too big to apply direct method.
+            if obj.c < -20
+                
+                % Reduce to another parameter case through recurrence relation.
+                approximation = obj.computeByRecurrence00Plus("forwards");
+                
+            else
+                
+                % Apply taylor series method.
+                approximation = obj.computeByTaylorA();
+                
+                % No convergence from taylor series method.
+                if isnan(approximation)
+                    
+                    % Apply single fraction method.
+                    approximation = obj.computeBySingleFraction();
+                    
+                    % No convergence from single fraction method.
+                    if isnan(approximation)
+                        
+                        % Get logger
+                        logger = PersistentLogger.getInstance();
+                        
+                        % Log this failure.
+                        logger.writeError("Case VI: Did not expect lack of convergence.")
+                        
+                        % Convergence from single fraction method.
+                    else
+                        return
+                        
+                    end
+                else
+                    % Convergence from taylor series method.
+                    return
+                    
+                end
+            end
+        end
         % Computational procedures for parameter case V.
         function approximation = computeCaseV(obj)
             
             % Check if c is too big to apply direct method.
             if obj.c > 20
-
+                
                 % Reduce to another parameter case through recurrence relation.
                 approximation = obj.computeByRecurrence00Plus("backwards");
-
+                
             else
-
+                
                 % Apply Taylor series method A.
                 approximation = obj.computeByTaylorA();
-
+                
                 % No convergence from Taylor series method A.
                 if isnan(approximation)
                     
                     % Apply Single Fraction method.
                     approximation = obj.computeBySingleFraction();
+                    
+                    % No convergence from the Single Fraction method.
+                    if isnan(approximation)
+                        
+                        % Get logger.
+                        logger = PersistentLogger.getInstance();
+                        
+                        % Log this failure.
+                        logger.writeError("Case V: did not expect lack of convergence")
+                    else
+                        % Convergence from single fraction method.
+                        return
+                        
+                    end
+                    
                 else
-
+                    % Convergence from taylor series method
+                    return
+                    
                 end
             end
         end
@@ -154,15 +225,15 @@ classdef HypergeometricCalculator < handle
                 % Compute the solution to the recurrence relation by backwards computation.
                 approximation = obj.computeByRecurrence00PlusBackwards();
                 
-            % Reduce to a c shifted backwards.
+                % Reduce to a c shifted backwards.
             elseif shift == "backwards"
-
+                
                 % Compute the solution to the recurrence relation by forwards computation.
-                approximation = obj.computeByRecurrence00PlusFowardsByOlver();
-            
+                approximation = obj.computeByRecurrence00PlusForwardsByOlver();
+                
             else
                 % Should not get here.
-
+                
             end
         end
         
@@ -183,6 +254,9 @@ classdef HypergeometricCalculator < handle
             % positive integer, using \mathbf{F}(a,b;c;z) and Olver's algorithm. Note
             % that Re(z) must be < 1/2.
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%
+            logger = PersistentLogger.getInstance();
+            %%%%%%%%%%%%%%%%%%%%%%%%
             % Set tolerance
             TOL = eps;
             
@@ -195,25 +269,43 @@ classdef HypergeometricCalculator < handle
             % Number of terms to shift.
             nTerms = int32(fix(obj.c - OPTIMUM_C));
             
+            %%%%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%
+            logger.writeInfo("nTerms: %d", nTerms);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
             % The reduced c parameter.
-            reducedc = obj.c - nTerms;
+            reducedc = double(obj.c - nTerms);
+            
             
             % Preallocate p.
-            p = zeros(1, MAX_ITER);
+            p = zeros(1, MAX_ITER + 1);
             
             % p is a variable used to determine the optimum value of N.
             p(1) = 1;
             p(2) = -(reducedc + 1) *...
-                (recudedc + ((-2 * (reducedc + 1)) + obj.a + obj.b + 1) * obj.z) /...
-                (reducedc - obj.a + 1) *...
+                (reducedc + (((-2 * (reducedc + 1)) + obj.a + obj.b + 1) * obj.z)) /...
+                ((reducedc - obj.a + 1) *...
                 (reducedc - obj.b + 1) *...
-                obj.z;
+                obj.z);
+            
+            %%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            logger.writeInfo("calculator's parameter classes: obj.a: %s, obj.b: %s, reducedc: %s, obj.z: %s",...
+                class(obj.a), class(obj.b), class(reducedc), class(obj.z));
+            logger.writeInfo("reduced c is %d", reducedc);
+            logger.writeInfo("Calculator's p(2): %d", p(2));
             
             % Reduced parameter case.
             fZeroHypergeometric = Hypergeometric(1, obj.a, obj.b, reducedc, obj.z);
             
             % Compute hypergeometric.
             fZero = fZeroHypergeometric.computeApproximation();
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            logger.writeInfo("fZero: %d, from calculator with parameters lambda: 1, a: %d, b: %d, reducedc: %d, z: %d",...
+                fZero, obj.a, obj.b, reducedc, obj.z);
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % r is a variable used to determine the optimum value of N.
             r = [reducedc * (reducedc + 1) * (obj.z - 1) * fZero /...
@@ -457,12 +549,6 @@ classdef HypergeometricCalculator < handle
             % Compute only 500 terms.
             MAX_ITER = 500;
             
-            % Get logger instance.
-            logger = PersistentLogger.getInstance()
-            
-            % Log the method.
-            logger.writeInfo("About to initiate Taylor series method B")
-            
             % Initialise vector r, which stores multipliers.
             r    = zeros(2 , 1);
             r(1) = (obj.a * obj.b) / obj.c;
@@ -508,14 +594,14 @@ classdef HypergeometricCalculator < handle
             % Output:
             %   approximation    An approximation to the hypergeometric function.
             
-            % Compute only 500 terms.
-            MAX_ITER = 500;
-            
-            % Get the logger instance.
+            %%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%
             logger = PersistentLogger.getInstance();
             
-            % Log the method.
-            logger.writeInfo("About to start Taylor series method A.")
+            logger.writeInfo("About to start TaylorA");
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            % Compute only 500 terms.
+            MAX_ITER = 500;
             
             % Assign alias for GammaCalculator.
             gc = GammaCalculator();
@@ -529,7 +615,7 @@ classdef HypergeometricCalculator < handle
                 taylorSum  = taylorTerm;
                 
                 for iIdx = 1 : MAX_ITER
-                    taylorTerm = ((obj.a - obj.c + iIdx) * (obj.b - obj.c + iIdx) * obj.z * a1) / iIdx /...
+                    taylorTerm = ((obj.a - obj.c + iIdx) * (obj.b - obj.c + iIdx) * obj.z * taylorTerm) / iIdx /...
                         (iIdx - obj.c + 1) ;
                     taylorSum  = taylorSum + taylorTerm;
                     
@@ -541,6 +627,11 @@ classdef HypergeometricCalculator < handle
                         % No convergence
                     elseif iIdx == MAX_ITER
                         approximation = NaN;
+                        
+                        % Get logger.
+                        logger = PersistentLogger.getInstance();
+                        
+                        % Log a warning.
                         logger.writeWarning(...
                             "No convergence achieved for parameter case %s with Taylor series method A", obj.id);
                         return
@@ -570,6 +661,11 @@ classdef HypergeometricCalculator < handle
                         % No convergence.
                     elseif (iIdx == MAX_ITER)
                         approximation = NaN;
+                        
+                        % Get logger instance.
+                        logger = PersistentLogger.getInstance();
+                        
+                        % Log warning.
                         logger.writeWarning(...
                             "No convergence achieved for parameter case %s, with Taylor series method A", obj.id);
                         return
@@ -593,12 +689,6 @@ classdef HypergeometricCalculator < handle
             
             % Assign maximum number of iterations.
             MAX_ITER = 500;
-            
-            % Get the logger instance.
-            logger = PersistentLogger.getInstance();
-            
-            % Log the method.
-            logger.writeInfo("About to start Single Fraction method.")
             
             % Initialise sequences.
             alphaSequence = [0, obj.c];

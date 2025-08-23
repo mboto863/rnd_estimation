@@ -1,0 +1,4 @@
+Name,SampleSize,Mean,StandardDeviation,Min,Median,Max
+HypergeometricCalculatorTests/easyCase,5,0.02170908,0.000925177997468595,0.020545,0.0217503,0.0228462
+HypergeometricCalculatorTests/testCalculator,154,0.0357035383116883,0.0133491112799395,0.0217255,0.03207275,0.1069251
+HypergeometricCalculatorTests/testReference,10,0.13187368,0.0111057136636758,0.1195781,0.1275714,0.1502192
