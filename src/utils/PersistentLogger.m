@@ -54,8 +54,8 @@ classdef PersistentLogger < handle
         end
     end
     methods
-        function writeInfo(obj, message, varargin)
-            %INFO Commands to add an informative log entry.
+        function writeDebug(obj, message, varargin)
+            %WRITEDEBUG Commands to add a debugging log entry.
             %
             % Input:
             %   obj         The Logger object.
@@ -64,7 +64,23 @@ classdef PersistentLogger < handle
             %
             % Output:
             %
-            % Commands to write.
+
+            % Command to write.
+            obj.writeToLogBook("DEBUG", message, varargin{:});
+
+        end
+        function writeInfo(obj, message, varargin)
+            %WRITEINFO Commands to add an informative log entry.
+            %
+            % Input:
+            %   obj         The Logger object.
+            %   message     The informative message to log.
+            %   varargin    Any extra parameters to be included in the log.
+            %
+            % Output:
+            %
+
+            % Command to write.
             obj.writeToLogBook("INFO", message, varargin{:});
         end
         function writeWarning(obj, message, varargin)
@@ -95,7 +111,7 @@ classdef PersistentLogger < handle
             % Commands to write.
             obj.writeToLogBook("ERROR", message, varargin{:});
         end
-        
+
         % Destructor
         function delete(obj)
             if obj.logFileId > 0

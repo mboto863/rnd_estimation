@@ -21,7 +21,7 @@ classdef HypergeometricMixture < handle
             obj.c      = c;
             obj.z      = z;
         end
-        function approximation = ComputeMixture(obj)
+        function approximation = computeApproximation(obj)
             %COMPUTEMIXTURE Approximate the Gaussian Hypergeometric mixture.
             %
             % Input:
@@ -35,16 +35,20 @@ classdef HypergeometricMixture < handle
             
             % Compute for every component.
             for iComponent = 1 : size(obj.a, 2)
-                
-                % The Hypergeometric object.
-                hypergeometric = Hypergeometric(obj.lambda(iComponent), obj.a(iComponent), obj.b(iComponent),...
+                if obj.lambda(iComponent) == 0
+                    singleValue = 0;
+                else
+                    % The Hypergeometric object.
+                    hypergeometric = Hypergeometric(obj.lambda(iComponent), obj.a(iComponent), obj.b(iComponent),...
                     obj.c(iComponent), obj.z(iComponent));
                 
-                % Approximate the hypergeometric.
-                hypergeometricValue = hypergeometric.computeApproximation();
+                    % Approximate the hypergeometric.
+                    singleValue = hypergeometric.computeApproximation();
+
+                end
                 
                 % Add to the mixture value.
-                mixtureValue = mixtureValue + hypergeometricValue;
+                mixtureValue = mixtureValue + singleValue;
                 
             end
             

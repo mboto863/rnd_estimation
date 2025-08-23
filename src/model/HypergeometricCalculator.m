@@ -7,6 +7,15 @@ classdef HypergeometricCalculator < handle
         id string
     end
     methods
+        %%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%
+        % function approximation = publicOlver(obj)
+        %     approximation = obj.computeByRecurrenceByOlver();
+        % end
+        % function approximation = publicRecurrence(obj)
+        %     approximation = obj.computeByRecurrence();
+        % end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
         function obj = HypergeometricCalculator(a, b, c, z)
             arguments
                 a
@@ -14,28 +23,32 @@ classdef HypergeometricCalculator < handle
                 c
                 z
             end
-            obj.a = a;
-            obj.b = b;
-            obj.c = c;
-            obj.z = z;
-            % Set id for the numerical procedure according to 'Numerical methods for the computation of the confluent
-            % and Gauss hypergeometric functions' by John Pearson et al. (table 6).
-            if (obj.a > 0) && (obj.b > 0) && (obj.c >= 0) && (obj.z >= 0)
-                obj.id = "I(A)";
-            elseif (obj.a > 0) && (obj.b > 0) && (obj.c >= 0) && (obj.z < 0)
-                obj.id = "I(B)";
-            elseif (obj.a < 0) && (obj.b < 0) && (obj.c >= 0)
-                obj.id = "II";
-            elseif (obj.a >= 0) && (obj.b >= 0) && (obj.c < 0)
-                obj.id = "III";
-            elseif (obj.a < 0) && (obj.b < 0) && (obj.c < 0)
-                obj.id = "IV";
-            elseif (obj.a < 0 || obj.b < 0) && (obj.c >= 0)
-                obj.id = "V";
-            elseif (obj.a < 0 || obj.b < 0) && (obj.c < 0)
-                obj.id = "VI";
+            if z >= (1 / 2)
+                error('z is not normalized');
             else
-                error('Unexpected parameter combination for the Hypergeometric calculator.')
+                obj.a = a;
+                obj.b = b;
+                obj.c = c;
+                obj.z = z;
+                % Set id for the numerical procedure according to 'Numerical methods for the computation of the confluent
+                % and Gauss hypergeometric functions' by John Pearson et al. (table 6).
+                if (obj.a > 0) && (obj.b > 0) && (obj.c >= 0) && (obj.z >= 0)
+                    obj.id = "I(A)";
+                elseif (obj.a > 0) && (obj.b > 0) && (obj.c >= 0) && (obj.z < 0)
+                    obj.id = "I(B)";
+                elseif (obj.a < 0) && (obj.b < 0) && (obj.c >= 0)
+                    obj.id = "II";
+                elseif (obj.a >= 0) && (obj.b >= 0) && (obj.c < 0)
+                    obj.id = "III";
+                elseif (obj.a < 0) && (obj.b < 0) && (obj.c < 0)
+                    obj.id = "IV";
+                elseif (obj.a < 0 || obj.b < 0) && (obj.c >= 0)
+                    obj.id = "V";
+                elseif (obj.a < 0 || obj.b < 0) && (obj.c < 0)
+                    obj.id = "VI";
+                else
+                    error('Unexpected parameter combination for the Hypergeometric calculator.')
+                end
             end
         end
         function approximation = computeApproximation(obj)
@@ -60,7 +73,7 @@ classdef HypergeometricCalculator < handle
                     
                     % Parameter case II.
                 case "II"
-                    approximation = obj.computeCaseIIOrIV();
+                    approximation = obj.computeCaseII();
                     
                     % Parameter case III.
                 case "III"
@@ -68,7 +81,7 @@ classdef HypergeometricCalculator < handle
                     
                     % Parameter case IV.
                 case "IV"
-                    approximation = obj.computeCaseIIOrIV();
+                    approximation = obj.computeCaseIV();
                     
                     % Parameter case V
                 case "V"
@@ -76,33 +89,87 @@ classdef HypergeometricCalculator < handle
                     
                     % Parameter case VI
                 case "VI"
-                    approximation = obj.computeCaseVI();
+                    approximation = obj.computeCaseVITest();
                 otherwise
                     % Should not get here.
                     error('Invalid object id.')
             end
         end
-        
-        %%%%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function approximation = publicOlver(obj)
-            
-            % Call the private Olver.
-            approximation = obj.computeByRecurrence00PlusForwardsByOlver();
-            
-        end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
     methods (Access = protected)
-        
+        function approximation = computeCaseIV(obj)
+            % Apply a transformation formula to reduce to another parameter case.
+            aTransformed      = obj.c - obj.a;
+            bTransformed      = obj.c - obj.b;
+
+            approximation = ((1 - obj.z) ^ (obj.c - obj.a - obj.b)) *...
+                hypergeom([aTransformed, bTransformed], obj.c, obj.z);
+
+        end
+        % function approximation = computeByRecurrenceRelation00PlusByMiller(obj, N)
+        %     % function [r] = hypfun_F_rec00plus_miller(a,b,c,z,n,k)
+        %     % 
+        %     % Computes the hypergeometric function \mathbf{F}(a,b;c+k;z), for k a large
+        %     % positive integer, using \mathbf{F}(a,b;c;z) and Miller's algorithm, with
+        %     % n a number much larger than k. Note that Re(z) must be < 1/2.
+        %     % 
+        %     % Copyright John W. Pearson 2014
+
+        %     % We try to get c close to 0.3, which seems to provide the best results according to Pearson et al.(2017).
+        %     OPTIMUM_C = 0.3;
+            
+        %     % Number of terms to be involved in the forwards computation.
+        %     nTerms = int32(fix(obj.c - OPTIMUM_C));
+            
+        %     % The reduced c parameter.
+        %     reducedc = double(obj.c - nTerms);
+
+        %     % Initialise vectors in Miller's algorithm.
+        %     fVector             = zeros(nTerms + 1, 1);
+        %     yVector = zeros(N + 1, 1);
+        %     aVector             = zeros(N - 1, 1);
+        %     bVector             = zeros(N - 1, 1);
+
+        %     % Define coefficients in recurrence relation
+        %     for iIdx = 1 : (N - 1)
+        %         aVector(iIdx) = ((reducedc + iIdx) * (reducedc + iIdx - 1) * (obj.z - 1)) /...
+        %         (reducedc + iIdx - obj.a) / (reducedc + iIdx - obj.b)/ obj.z;
+        %         bVector(iIdx) = (reducedc + iIdx) *...
+        %         (reducedc + iIdx - 1 - ((2 * (reducedc + iIdx)) - obj.a - obj.b - 1) * obj.z) /...
+        %         (reducedc + iIdx - obj.a) / (reducedc + iIdx - obj.b) / obj.z;
+        %     end
+
+        %     % Input minimal solution with k=0
+        %     fReducedSolutionHypergeometric = Hypergeometric(obj.a, obj.b, reducedc, obj.z);
+        %     fReducedSolution = fReducedSolutionHypergeometric.computeApproximation();
+
+        %     yVector(end) = 0;
+        %     yVector(end-1) = 1;
+
+        %     % Compute recurrence backwards
+        %     for i2 = 2:n
+        %         rightHandSideVector(n+1-i2) = -(rightHandSideVector(n+3-i2)+b1(n+1-i2)*rightHandSideVector(n+2-i2))/a1(n+1-i2);
+        %     end
+
+        %     % Apply last line of Miller's algorithm
+        %     for i3 = 1:k+1
+        %         f(i3) = f1/rightHandSideVector(1)*rightHandSideVector(i3);
+        %     end
+
+        %     % Return solution
+        %     r = f(end);
+
+        % end
         % Computational procedures for parameter case VI.
+        function approximation = computeCaseVITest(obj)
+            approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
+        end
         function approximation = computeCaseVI(obj)
             
             % Check if c is too big to apply direct method.
             if obj.c < -20
                 
-                % Reduce to another parameter case through recurrence relation.
-                approximation = obj.computeByRecurrence00Plus("forwards");
-                
+                approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
             else
                 
                 % Apply taylor series method.
@@ -139,10 +206,10 @@ classdef HypergeometricCalculator < handle
         function approximation = computeCaseV(obj)
             
             % Check if c is too big to apply direct method.
-            if obj.c > 20
-                
-                % Reduce to another parameter case through recurrence relation.
-                approximation = obj.computeByRecurrence00Plus("backwards");
+            if obj.c >= 30
+                approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
+                % % Reduce to another parameter case through recurrence relation.
+                % approximation = obj.computeByRecurrenceInterface("forwards");
                 
             else
                 
@@ -162,7 +229,11 @@ classdef HypergeometricCalculator < handle
                         logger = PersistentLogger.getInstance();
                         
                         % Log this failure.
-                        logger.writeError("Case V: did not expect lack of convergence")
+                        logger.writeWarning("Case V: lack of convergence. Using built-in functionality")
+
+
+                        % Use built-in hypergeom.
+                        approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
                     else
                         % Convergence from single fraction method.
                         return
@@ -181,55 +252,56 @@ classdef HypergeometricCalculator < handle
         function approximation = computeCaseIII(obj)
             
             % Check if c is too big to apply direct method.
-            if obj.c < -20
+            % if obj.c < -20
                 
-                % Reduce to another parameter case through recurrence relation.
-                approximation = obj.computeByRecurrence00Plus("forwards");
+            %     % Reduce to another parameter case through recurrence relation.
+            %     approximation = obj.computeByRecurrenceInterface("backwards");
                 
-            else
+            % else
                 
-                % Apply Taylor series method A.
-                approximation = obj.computeByTaylorA();
+            %     % Apply Taylor series method A.
+            %     approximation = obj.computeByTaylorA();
                 
-                % No convergence from Taylor series method A.
-                if isnan(approximation)
+            %     % No convergence from Taylor series method A.
+            %     if isnan(approximation)
                     
-                    % Apply Single Fraction method.
-                    approximation = obj.computeBySingleFraction();
+            %         % Apply Single Fraction method.
+            %         approximation = obj.computeBySingleFraction();
                     
-                    % No convergence from Single Fraction method.
-                    if isnan(approximation)
-                        % Get the logger instance.
-                        logger = PersistentLogger.getInstance();
+            %         % No convergence from Single Fraction method.
+            %         if isnan(approximation)
+            %             % Get the logger instance.
+            %             logger = PersistentLogger.getInstance();
                         
-                        % Log the error.
-                        logger.writeError("Case III: Did not expect lack of convergence.");
+            %             % Log the error.
+            %             logger.writeError("Case III: Did not expect lack of convergence.");
                         
-                    else
-                        % Convergence.
-                        return
+            %         else
+            %             % Convergence.
+            %             return
                         
-                    end
-                else
-                    % Convergence.
-                    return
+            %         end
+            %     else
+            %         % Convergence.
+            %         return
                     
-                end
-            end
+            %     end
+            % end
+            approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
         end
-        function approximation = computeByRecurrence00Plus(obj, shift)
+        function approximation = computeByRecurrenceInterface(obj, shift)
             
-            % Reduce to a c shifted forwards.
-            if shift == "forwards"
+            % Reduce to a c positively shifted.
+            if shift == "backwards"
                 
                 % Compute the solution to the recurrence relation by backwards computation.
-                approximation = obj.computeByRecurrence00PlusBackwards();
+                approximation = obj.computeByRecurrence();
                 
-                % Reduce to a c shifted backwards.
-            elseif shift == "backwards"
+                % Reduce to a c negatively shifted.
+            elseif shift == "forwards"
                 
                 % Compute the solution to the recurrence relation by forwards computation.
-                approximation = obj.computeByRecurrence00PlusForwardsByOlver();
+                approximation = obj.computeByRecurrenceByOlver();
                 
             else
                 % Should not get here.
@@ -238,7 +310,7 @@ classdef HypergeometricCalculator < handle
         end
         
         % Forwards computation of the Hypergeometric function.
-        function approximation = computeByRecurrence00PlusForwardsByOlver(obj)
+        function approximation = computeByRecurrenceByOlver(obj)
             %COMPUTEBYRECURRENCE00PLUSFORWARDSBYOLVER Reduces the computation of the Hypergeometric function to a parameter
             % case with c close to 0.3, by applying the recurrence 00plus, propagating it forwards with Olver's algorithm.
             %
@@ -254,9 +326,6 @@ classdef HypergeometricCalculator < handle
             % positive integer, using \mathbf{F}(a,b;c;z) and Olver's algorithm. Note
             % that Re(z) must be < 1/2.
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%
-            logger = PersistentLogger.getInstance();
-            %%%%%%%%%%%%%%%%%%%%%%%%
             % Set tolerance
             TOL = eps;
             
@@ -268,10 +337,6 @@ classdef HypergeometricCalculator < handle
             
             % Number of terms to shift.
             nTerms = int32(fix(obj.c - OPTIMUM_C));
-            
-            %%%%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%
-            logger.writeInfo("nTerms: %d", nTerms);
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % The reduced c parameter.
             reducedc = double(obj.c - nTerms);
@@ -288,24 +353,11 @@ classdef HypergeometricCalculator < handle
                 (reducedc - obj.b + 1) *...
                 obj.z);
             
-            %%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            logger.writeInfo("calculator's parameter classes: obj.a: %s, obj.b: %s, reducedc: %s, obj.z: %s",...
-                class(obj.a), class(obj.b), class(reducedc), class(obj.z));
-            logger.writeInfo("reduced c is %d", reducedc);
-            logger.writeInfo("Calculator's p(2): %d", p(2));
-            
             % Reduced parameter case.
             fZeroHypergeometric = Hypergeometric(1, obj.a, obj.b, reducedc, obj.z);
             
             % Compute hypergeometric.
             fZero = fZeroHypergeometric.computeApproximation();
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%
-            
-            logger.writeInfo("fZero: %d, from calculator with parameters lambda: 1, a: %d, b: %d, reducedc: %d, z: %d",...
-                fZero, obj.a, obj.b, reducedc, obj.z);
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % r is a variable used to determine the optimum value of N.
             r = [reducedc * (reducedc + 1) * (obj.z - 1) * fZero /...
@@ -354,7 +406,7 @@ classdef HypergeometricCalculator < handle
                 end
             end
             
-            % Set condition on application of algorithm
+            % The term at which convergence took place.
             N = iTerm;
             
             % Method cannot be applied
@@ -364,27 +416,34 @@ classdef HypergeometricCalculator < handle
                 logger = PersistentLogger.getInstance();
                 
                 % Log this failure.
-                logger.writeError("Recurrence 00plus forward propagation by Olver's algorithm will not work because %d is greater than or equal to %d",...
+                logger.writeWarning("Recurrence 00plus forward propagation by Olver's algorithm will not work because %d is greater than or equal to %d",...
                     nTerms, N);
+                %%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                logger.writeDebug("Olver failure with parameters a: %d, b: %d, c: %d, z: %d",...
+                    obj.a, obj.b, obj.c, obj.z);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 % Return NaN to let the interface know the method cannot be applied.
-                approximation = NaN;
+                approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
                 return
                 
             end
-            
+            %%%%%%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%
+            logger = PersistentLogger.getInstance();
+            logger.writeDebug("inspect N: %d class %s, nTerms: %d class %s", N, class(N), nTerms, class(nTerms));
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Apply back substitution
             f = zeros(N - 1, 1);
             f(N - 1) = r(N - 1) / p(N);
             for iTerm = (N - 2) : -1 : nTerms
-                f(iTerm) = (r(iTerm) + p(iTerm) * f(iTerm + 1)) / p(iTerm + 1);
+                f(iTerm) = (r(iTerm) + (p(iTerm) * f(iTerm + 1))) / p(iTerm + 1);
             end
             
             % Return solution
             approximation = f(nTerms);
         end
         % Backwards computation to the Gaussian Hypergeometric function
-        function approximation = computeByRecurrence00PlusBackwards(obj)
+        function approximation = computeByRecurrence(obj)
             %COMPUTEBYRECURRENCE00PLUSBACKWARDS Reduces the computation of the Hypergeometric function to a parameter case
             % with c close to 0.3.
             %
@@ -402,14 +461,44 @@ classdef HypergeometricCalculator < handle
             
             % Number of terms to shift.
             % We try to get c close to 0.3, which seems to provide the best results according to Pearson et al. (2017).
-            nTerms = int32(fix(0.3 - obj.c));
             
+            % Reduce to a nice parameter case.
+            % When b is positive, c > b > 0 is a good parameter case.
+            % if obj.b > 0
+                
+            %     if obj.b - obj.c > 1
+            %         % The number of terms to shift.
+            %         nTerms = fix(obj.b - obj.c) + 1;
+
+            %     else
+            %         nTerms = fix(obj.b - obj.c) + 2
+            %     end
+            
+            % elseif obj.a + obj.b > 0
+
+            % end
+            % nTerms = fix(1 - obj.c) + 1;
+            if (fix(0.3 - obj.c)) == (-obj.c)
+                nTerms = fix(0.3 - obj.c) + 1;
+            else
+                nTerms = fix(0.3 - obj.c);
+            end
+
+            % The reduced c parameter.
+            reducedc = obj.c + nTerms;
+            
+            %%%%%%%%%%%%%% DEBUG %%%%%%%%%%%
+            logger = PersistentLogger.getInstance();
+            logger.writeDebug("At computeByRecurrence parameter case %s", obj.id);
+            logger.writeDebug("At computeByRecurrence nTerms: %d", nTerms);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
             % Preallocate recurrence relation's solution.
-            recurrenceSolution = nan(nTerms, 1);
+            recurrenceSolution = nan(nTerms + 1, 1);
             
             % First terms Hypergeometric objects.
-            firstTermHypergeometric   = Hypergeometric(1, obj.a, obj.b, obj.c + nTerms, obj.z);
-            secondTermHypergeometric  = Hypergeometric(1, obj.a, obj.b, obj.c + nTerms - 1, obj.z);
+            firstTermHypergeometric   = Hypergeometric(1, obj.a, obj.b, reducedc, obj.z);
+            secondTermHypergeometric  = Hypergeometric(1, obj.a, obj.b, reducedc - 1, obj.z);
             
             % Fill in first 2 solutions.
             recurrenceSolution(1) = firstTermHypergeometric.computeApproximation();
@@ -420,25 +509,25 @@ classdef HypergeometricCalculator < handle
                 
                 % Apply recurrence relation.
                 recurrenceSolution(iTerm + 1) =...
-                    ((-(obj.c + nTerms + 1 - iTerm) *...
-                    (obj.c + nTerms - iTerm - ((2 * obj.c) + nTerms + 1 - (2 * iTerm) - obj.a - obj.b) * obj.z) *...
-                    recurrenceSolution(iTerm)) -...
-                    ((obj.c + nTerms - obj.a + 1 - iTerm) *...
-                    (obj.c + nTerms - obj.b + 1 - iTerm) *...
+                    (-(reducedc + 1 - iTerm) *...
+                    (reducedc - iTerm - ((2 * reducedc) + 1 - (2 * iTerm) - obj.a - obj.b) * obj.z) *...
+                    recurrenceSolution(iTerm) -...
+                    (reducedc - obj.a + 1 - iTerm) *...
+                    (reducedc - obj.b + 1 - iTerm) *...
                     obj.z * recurrenceSolution(iTerm - 1)) /...
-                    (obj.c + nTerms + 1 - iTerm) /...
-                    (obj.c + nTerms - iTerm) /...
-                    (obj.z - 1));
+                    (reducedc + 1 - iTerm) /...
+                    (reducedc - iTerm) /...
+                    (obj.z - 1);
                 
             end
             
             % Return solution
-            approximation = recurrenceSolution(nTerms);
+            approximation = recurrenceSolution(end);
             
         end
         
         % Computational procedures for parameter cases II and IV.
-        function approximation = computeCaseIIOrIV(obj)
+        function approximation = computeCaseII(obj)
             %COMPUTECASEII Computes the Gaussian Hypergeometric function for parameter cases II and IV.
             %
             % Input:
@@ -447,16 +536,24 @@ classdef HypergeometricCalculator < handle
             % Output:
             %   approximation    An approximation to the Gaussian Hypergeometric function.
             
-            % Apply a transformation formula to reduce to case I.
-            lambda            = (1 - obj.z) ^ (obj.c - obj.a - obj.b);
+            % Apply a transformation formula to reduce to another parameter case.
             aTransformed      = obj.c - obj.a;
             bTransformed      = obj.c - obj.b;
             
-            % Create a new Hypergeometric object with the transformed parameters.
-            hypergeometric = Hypergeometric(lambda, aTransformed, bTransformed, obj.c, obj.z);
-            
-            % Compute approximation with transformed parameters.
-            approximation = hypergeometric.computeApproximation();
+            % Transformation is not able to switch parameter regime.
+            if aTransformed < 0 && bTransformed < 0
+                
+                approximation = hypergeom([aTransformed, bTransformed], obj.c, obj.z);
+            else
+                % Transformation formula can switch parameter regime.
+                lambda = (1 - obj.z) ^ (obj.c - obj.a - obj.b);
+                
+                % Create a new Hypergeometric object with the transformed parameters.
+                hypergeometric = Hypergeometric(lambda, aTransformed, bTransformed, obj.c, obj.z);
+                
+                % Compute approximation with transformed parameters.
+                approximation = hypergeometric.computeApproximation();
+            end
         end
         
         % Computational procedures for parameter case I(B).
@@ -583,7 +680,7 @@ classdef HypergeometricCalculator < handle
                 end
             end
             % If convergence is achieved, return sum of terms computed.
-            approximation = A(end) / GammaCalculator.computeGammaFunction(obj.z);
+            approximation = A(end);
         end
         function approximation = computeByTaylorA(obj)
             %COMPUTEBYTAYLORA Computes the hypergeometric function using Taylor series method A up to a tolerance.
@@ -603,15 +700,15 @@ classdef HypergeometricCalculator < handle
             % Compute only 500 terms.
             MAX_ITER = 500;
             
-            % Assign alias for GammaCalculator.
-            gc = GammaCalculator();
+            % % Assign alias for GammaCalculator.
+            % gc = GammaCalculator();
             
             % Care if c is a non-positive integer.
             isNonPositiveInteger = (abs(obj.c - fix(obj.c)) < 1e-12) && (obj.c <= 0);
             if isNonPositiveInteger
-                taylorTerm = (gc.computeGammaFunction(obj.a - obj.c + 1) * gc.computeGammaFunction(obj.b - obj.c + 1) *...
-                    (obj.z ^ (-obj.c + 1))) / gc.computeGammaFunction(obj.a)  / gc.computeGammaFunction(obj.b) /...
-                    gc.computeGammaFunction(-obj.c + 2);
+                taylorTerm = (gamma(obj.a - obj.c + 1) * gamma(obj.b - obj.c + 1) *...
+                    (obj.z ^ (-obj.c + 1))) / gamma(obj.a)  / gamma(obj.b) /...
+                    gamma(-obj.c + 2);
                 taylorSum  = taylorTerm;
                 
                 for iIdx = 1 : MAX_ITER
@@ -706,7 +803,12 @@ classdef HypergeometricCalculator < handle
                 % Stop if any of these are infinitely large
                 isSequenceInf = isinf(alphaSequence(iIdx)) || isinf(betaSequence(iIdx)) || isinf(gammaSequence(iIdx));
                 if isSequenceInf
+
+                    % Return NaN to let the interface know there was no convergence.
                     approximation = NaN;
+
+                    % Log this failure.
+                    logger = PersistentLogger.getInstance();
                     logger.writeWarning(...
                         "Infinite values reached for one of 'alphaSequence':%d, 'betaSequence: %d, gammaSequence: %d at iteration %d",...
                         alphaSequence(iIdx), betaSequence(iIdx), gammaSequence(iIdx), iIdx);
@@ -728,6 +830,7 @@ classdef HypergeometricCalculator < handle
                 % No convergence
                 if (iIdx == MAX_ITER)
                     approximation = NaN;
+                    logger = PersistentLogger.getInstance();
                     logger.writeWarning(...
                         "No convergence achieved for parameter case %s with Single Fraction method.", obj.id);
                     return
@@ -752,10 +855,10 @@ classdef HypergeometricCalculator < handle
             [nodes ,weights] = GaussJacobiQuadrature.computeNodesWeights(obj.c - obj.b - 1,obj.b - 1, nPoints);
             
             % Compute the Hypergeometric function using its integral representation.
-            approximation = GammaCalculator.computeGammaFunction(obj.c) *...
+            approximation = gamma(obj.c) *...
                 (sum(weights .* ((1 - ((obj.z  * (nodes + 1)) / 2)) .^ (-obj.a))) /...
-                GammaCalculator.computeGammaFunction(obj.b) /...
-                GammaCalculator.computeGammaFunction(obj.c - obj.b) /...
+                gamma(obj.b) /...
+                gamma(obj.c - obj.b) /...
                 (2 ^ (obj.c - 1)));
         end
     end

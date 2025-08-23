@@ -22,9 +22,9 @@ classdef OlverTests < matlab.unittest.TestCase
         function prepareData(tc)
             
             % Get a parameter case V with c > 20
-            tc.aData = -0.1;
+            tc.aData = -20;
             tc.bData = -1e-6;
-            tc.cData = 40;
+            tc.cData = 30;
             tc.zData = 0.4;
             tc.hypergeometricCalculator = HypergeometricCalculator(tc.aData, tc.bData, tc.cData, tc.zData);
         end
