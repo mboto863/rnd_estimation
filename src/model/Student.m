@@ -71,20 +71,36 @@ classdef Student < Model
                 };
             
             % Compute RND factors
-            
-            dHypergeometricMixture = HypergeometricMixture(dlambda, a, b, c, z{1});
-            d                   = dHypergeometricMixture.computeApproximation();
+            dValues = zeros(size(a));
+            for iComponent = 1 : numel(a)
+                dHypergeometric = Hypergeometric(...
+                    1,...
+                    a(iComponent),...
+                    b(iComponent),...
+                    c(iComponent),...
+                    z{1}(iComponent)...
+                    );
+                dValues(iComponent) = dlambda(iComponent) * dHypergeometric.computeApproximation();
+            end
+            d = sum(dValues);
 
             % Complete last omega.
             omega = [omega, 1 - sum(omega)];
 
             % Lambda scalar of price.
-            pricelambda = omega .* (d + (data.(cn.strike) - mu) ./ abs(data.(cn.strike) - mu) .* sigma .^ 2 .* nu ./...
+            priceLambda = omega .* (d + (data.(cn.strike) - mu) ./ abs(data.(cn.strike) - mu) .* sigma .^ 2 .* nu ./...
             (nu - 1) ./ normalizationFactor .* (1 + (data.(cn.strike) - mu) .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5);
             % Compute price.
-            priceHypergeometricMixture = HypergeometricMixture(pricelambda, a, b, c, z{2});
+            priceValues = zeros(size(a));
+            for iIn = 1 : numel(a)
+                priceHypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z{2}(iIn));
+                priceValues(iIn)    = priceLambda(iIn) * priceHypergeometric.computeApproximation();
+            end
             price = exp(-(data.(cn.riskFreeRate) - data.(cn.dividendYield)) * data.(cn.timeToMaturity)) *...
-            priceHypergeometricMixture.computeApproximation();
+            sum(priceValues);
+            % priceHypergeometricMixture = HypergeometricMixture(pricelambda, a, b, c, z{2});
+            % price = exp(-(data.(cn.riskFreeRate) - data.(cn.dividendYield)) * data.(cn.timeToMaturity)) *...
+            % priceHypergeometricMixture.computeApproximation();
         end
         function price = getForwardPrice(parameters)
         %GETFORWARDPRICE Computes underlying model forward price.
