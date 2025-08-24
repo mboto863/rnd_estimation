@@ -89,7 +89,7 @@ classdef HypergeometricCalculator < handle
                     
                     % Parameter case VI
                 case "VI"
-                    approximation = obj.computeCaseVITest();
+                    approximation = obj.computeCaseVI();
                 otherwise
                     % Should not get here.
                     error('Invalid object id.')
@@ -161,9 +161,6 @@ classdef HypergeometricCalculator < handle
 
         % end
         % Computational procedures for parameter case VI.
-        function approximation = computeCaseVITest(obj)
-            approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
-        end
         function approximation = computeCaseVI(obj)
             
             % Check if c is too big to apply direct method.
@@ -252,42 +249,41 @@ classdef HypergeometricCalculator < handle
         function approximation = computeCaseIII(obj)
             
             % Check if c is too big to apply direct method.
-            % if obj.c < -20
+            if obj.c < -20
                 
-            %     % Reduce to another parameter case through recurrence relation.
-            %     approximation = obj.computeByRecurrenceInterface("backwards");
+                % % Reduce to another parameter case through recurrence relation.
+                % approximation = obj.computeByRecurrenceInterface("backwards");
+                approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
+            else
                 
-            % else
+                % Apply Taylor series method A.
+                approximation = obj.computeByTaylorA();
                 
-            %     % Apply Taylor series method A.
-            %     approximation = obj.computeByTaylorA();
-                
-            %     % No convergence from Taylor series method A.
-            %     if isnan(approximation)
+                % No convergence from Taylor series method A.
+                if isnan(approximation)
                     
-            %         % Apply Single Fraction method.
-            %         approximation = obj.computeBySingleFraction();
+                    % Apply Single Fraction method.
+                    approximation = obj.computeBySingleFraction();
                     
-            %         % No convergence from Single Fraction method.
-            %         if isnan(approximation)
-            %             % Get the logger instance.
-            %             logger = PersistentLogger.getInstance();
+                    % No convergence from Single Fraction method.
+                    if isnan(approximation)
+                        % Get the logger instance.
+                        logger = PersistentLogger.getInstance();
                         
-            %             % Log the error.
-            %             logger.writeError("Case III: Did not expect lack of convergence.");
+                        % Log the error.
+                        logger.writeError("Case III: Did not expect lack of convergence.");
                         
-            %         else
-            %             % Convergence.
-            %             return
+                    else
+                        % Convergence.
+                        return
                         
-            %         end
-            %     else
-            %         % Convergence.
-            %         return
+                    end
+                else
+                    % Convergence.
+                    return
                     
-            %     end
-            % end
-            approximation = hypergeom([obj.a, obj.b], obj.c, obj.z);
+                end
+            end
         end
         function approximation = computeByRecurrenceInterface(obj, shift)
             
@@ -690,12 +686,6 @@ classdef HypergeometricCalculator < handle
             %
             % Output:
             %   approximation    An approximation to the hypergeometric function.
-            
-            %%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%
-            logger = PersistentLogger.getInstance();
-            
-            logger.writeInfo("About to start TaylorA");
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % Compute only 500 terms.
             MAX_ITER = 500;

@@ -179,7 +179,7 @@ classdef StudentParameterSetup < ParameterSetup
                 case "nu"
                     [lowerBound, upperBound] = deal(obj.getLowerBound(name)...
                         ,obj.getUpperBound(name));
-                    degreesOfLiberty         = 15; 
+                    degreesOfLiberty         = 5;
                     if any(degreesOfLiberty < lowerBound) ||...
                             any(degreesOfLiberty > upperBound)
                         error('nu initializer not within static bounds');

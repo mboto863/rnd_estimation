@@ -43,13 +43,12 @@ classdef Hypergeometric < handle
                 if obj.lambda == 0
                     approximation = 0;
                 else
-                    hypergeometricCalculator = HypergeometricCalculator(obj.a, obj.b, obj.c, obj.z);
-                    approximation = obj.lambda * hypergeometricCalculator.computeApproximation();
+                    approximation = obj.lambda * obj.computeByTaylorA();
                 end
             end
         end
     end
-    methods (Access = private)
+    methods
         % Transformation formulae
         function normalizez(obj)
             %NORMALIZEZ Applies a transformation formula to get the z argument inside the interval (0 , 1/2).
@@ -65,7 +64,7 @@ classdef Hypergeometric < handle
             else
                 temp = obj.getArguments();
                 if temp.z < -1
-                    obj.lambda = [...
+                    obj.lambda = temp.lambda .* [...
                         (1 - temp.z) ^ -temp.a *...
                         gamma(temp.c) * gamma(temp.b - temp.a) /...
                         gamma(temp.b) / gamma(temp.c - temp.a)...
@@ -79,13 +78,13 @@ classdef Hypergeometric < handle
                     obj.c      = [temp.a - temp.b + 1, temp.b - temp.a + 1];
                     obj.z      = [1 / (1 - temp.z), 1 / (1 - temp.z)];
                 elseif temp.z < 0
-                    obj.lambda = (1 - temp.z) ^ (-temp.a);
+                    obj.lambda = temp.lambda * (1 - temp.z) ^ (-temp.a);
                     % a stays the same
                     obj.b = temp.c - temp.b;
                     % c stays the same
                     obj.z = temp.z / (temp.z - 1);
                 elseif temp.z > 2
-                    obj.lambda = [((-temp.z) ^ -temp.a) *...
+                    obj.lambda = temp.lambda * [((-temp.z) ^ -temp.a) *...
                         gamma(temp.c) * gamma(temp.b - temp.a)/...
                         gamma(temp.b) / gamma(temp.c - temp.a)...
                         ,...
@@ -97,7 +96,7 @@ classdef Hypergeometric < handle
                     obj.c      = [temp.a - temp.b + 1, temp.b - temp.a + 1];
                     obj.z      = [1 / temp.z, 1 / temp.z];
                 elseif temp.z > 1
-                    obj.lambda = [((temp.z ^ (-temp.a)) *...
+                    obj.lambda = temp.lambda * [((temp.z ^ (-temp.a)) *...
                         (gamma(temp.c) * gamma(temp.c - temp.a - temp.b))) /...
                         (gamma(temp.c - temp.a) * gamma(temp.c - temp.b))...
                         ,...
@@ -109,13 +108,13 @@ classdef Hypergeometric < handle
                     obj.b      = [temp.a - temp.c + 1, 1 - temp.a];
                     obj.c      = [temp.a + temp.b - temp.c + 1, temp.c - temp.a - temp.b + 1];
                     obj.z     = [1 - 1 / temp.z, 1 - 1 / temp.z];
-                elseif temp.z > 1 / 2
-                    obj.lambda = [gamma(temp.c) * gamma(temp.c - temp.a - temp.b) /...
-                        gamma(temp.c - temp.a) / gamma(temp.c - temp.b)...
-                        ,...
-                        (1 - temp.z) ^ (temp.c - temp.a - temp.b) *...
-                        gamma(temp.c) * gamma(temp.a + temp.b - temp.c) /...
-                        gamma(temp.a) * gamma(temp.b)];
+                elseif temp.z > 0.5
+                    obj.lambda = temp.lambda * [...
+                        (gamma(temp.c) * gamma(temp.c - temp.a - temp.b)) /...
+                        (gamma(temp.c - temp.a) * gamma(temp.c - temp.b)),...
+                        (((1 - temp.z) ^ (temp.c - temp.a - temp.b)) *...
+                        gamma(temp.c) * gamma(temp.a + temp.b - temp.c)) /...
+                        (gamma(temp.a) * gamma(temp.b))];
                     obj.a      = [temp.a, temp.c - temp.a];
                     obj.b      = [temp.b, temp.c - temp.b];
                     obj.c      = [temp.a + temp.b - temp.c + 1, temp.c - temp.a - temp.b + 1];
@@ -127,6 +126,92 @@ classdef Hypergeometric < handle
             end
         end
         % Numerical methods for approximating hypergeometric value
+        function approximation = computeByTaylorA(obj)
+            %COMPUTEBYTAYLORA Computes the hypergeometric function using Taylor series method A up to a tolerance.
+            %
+            % Input:
+            %   obj              The HypergeometricCalculator object.
+            %
+            % Output:
+            %   approximation    An approximation to the hypergeometric function.
+            
+            % Compute only 500 terms.
+            MAX_ITER = 500;
+            
+            % % Assign alias for GammaCalculator.
+            % gc = GammaCalculator();
+            
+            % Care if c is a non-positive integer.
+            isNonPositiveInteger = (abs(obj.c - fix(obj.c)) < 1e-12) && (obj.c <= 0);
+            if isNonPositiveInteger
+                taylorTerm = (gamma(obj.a - obj.c + 1) * gamma(obj.b - obj.c + 1) *...
+                    (obj.z ^ (-obj.c + 1))) / gamma(obj.a)  / gamma(obj.b) /...
+                    gamma(-obj.c + 2);
+                taylorSum  = taylorTerm;
+                
+                for iIdx = 1 : MAX_ITER
+                    taylorTerm = ((obj.a - obj.c + iIdx) * (obj.b - obj.c + iIdx) * obj.z * taylorTerm) / iIdx /...
+                        (iIdx - obj.c + 1) ;
+                    taylorSum  = taylorSum + taylorTerm;
+                    
+                    % Check if stopping criterion is satisfied.
+                    stoppingCriterion = (abs(taylorTerm) / abs(taylorSum)) < Constants.tolTaylorA;
+                    if stoppingCriterion
+                        break
+                        
+                        % No convergence
+                    elseif iIdx == MAX_ITER
+                        approximation = NaN;
+                        
+                        % Get logger.
+                        logger = PersistentLogger.getInstance();
+                        
+                        % Log a warning.
+                        logger.writeWarning(...
+                            "No convergence achieved for parameter case %s with Taylor series method A", obj.id);
+                        return
+                    else
+                        % Keep computing.
+                    end
+                end
+                
+                approximation = taylorSum;
+            else
+                % Initialise relevant quantities
+                taylorTerm = 1;
+                taylorSum  = 1;
+                
+                for iIdx = 1 : MAX_ITER
+                    % Compute next term
+                    taylorTerm = ((obj.a + iIdx - 1) * (obj.b + iIdx - 1) * obj.z * taylorTerm) / (obj.c + iIdx - 1) /...
+                        iIdx;
+                    
+                    % Update the sum of computed terms
+                    taylorSum  = taylorSum + taylorTerm;
+                    
+                    % Check if stopping criterion is satisfied.
+                    stoppingCriterion = (abs(taylorTerm) / abs(taylorSum)) < Constants.tolTaylorA;
+                    if stoppingCriterion
+                        break
+                        % No convergence.
+                    elseif (iIdx == MAX_ITER)
+                        approximation = Inf;
+                        
+                        % Get logger instance.
+                        logger = PersistentLogger.getInstance();
+                        
+                        % Log warning.
+                        logger.writeWarning(...
+                            "No convergence achieved for parameter case %s, with Taylor series method A");
+                        return
+                    else
+                        % Keep computing.
+                    end
+                end
+                % If convergence achieved, return sum of terms computed
+                approximation = taylorSum;
+            end
+        end
         function value = SingleFraction(obj)
             %SINGLEFRACTION Computes an approximation to the Gaussian Hypergeometric function by the Single
             % Fraction method

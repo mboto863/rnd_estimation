@@ -28,17 +28,10 @@ classdef Student < Model
 
             % set parameters
             parameters = valueHandler.getStructure();            
-            mu = parameters.mu;
-            sigma = parameters.sigma;
-            nu = parameters.nu;
 
             % constraints
             equality   = Student.getForwardPrice(parameters) - data.(c.futuresPrice)(1);
-            x1         = (mu ./ sigma) .^ 2;
-            x2         = ((data.(c.strike)(end) - mu) ./ sigma) .^ 2;
-            x          = max([x1; x2]);
-            zBound     = mu .^ 2 ./ sigma .^ 2 ./ nu - 1;
-            inequality = [zBound, x - nu];
+            inequality = [];
         end
         function price = getPrice(parameters, data)
         %GETPRICE Computes option model price.
@@ -64,29 +57,34 @@ classdef Student < Model
             nu    = parameters.nu;
 
             % Assign hypergeometric arguments.
-            a = -0.5 * ones(size(mu));
-            b = 1 - nu ./ 2;
-            c = 0.5 * ones(size(mu));
-            z = {1 ./ (1 + sigma .^ 2 .* nu ./ mu .^ 2),...
-                (data.(cn.strike) - mu) .^ 2 ./ ((data.(cn.strike) - mu) .^ 2 + sigma .^...
-                    2 .* nu)};
-            
-            % Compute RND factors
             normalizationFactor = sigma .* sqrt(nu .* pi) .*...
                 gamma(nu ./ 2) ./ gamma((nu + 1) ./ 2);
-            d                   = mu ./ abs(mu) .* sigma .* nu ./ (nu - 1) ./...
-                normalizationFactor .* (1 + mu .^ 2 ./ sigma .^ 2 ./...
-                nu) .^ 0.5 .* Student.approximateBySingleFraction(...
-                a, b, c, z{1});
+            % The lambda scalar of d.
+            dlambda             = mu ./ abs(mu) .* sigma .* nu ./ (nu - 1) ./...
+                normalizationFactor .* (1 + mu .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5;
+            a                   = -0.5 * ones(size(mu));
+            b                   = 1 - nu ./ 2;
+            c                   = 0.5 * ones(size(mu));
+            z                   = {...
+                1 ./ (1 + sigma .^ 2 .* nu ./ mu .^ 2),...
+                (data.(cn.strike) - mu) .^ 2 ./ ((data.(cn.strike) - mu) .^ 2 + sigma .^ 2 .* nu)...
+                };
+            
+            % Compute RND factors
+            
+            dHypergeometricMixture = HypergeometricMixture(dlambda, a, b, c, z{1});
+            d                   = dHypergeometricMixture.computeApproximation();
 
             % Complete last omega.
             omega = [omega, 1 - sum(omega)];
 
+            % Lambda scalar of price.
+            pricelambda = omega .* (d + (data.(cn.strike) - mu) ./ abs(data.(cn.strike) - mu) .* sigma .^ 2 .* nu ./...
+            (nu - 1) ./ normalizationFactor .* (1 + (data.(cn.strike) - mu) .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5);
             % Compute price.
+            priceHypergeometricMixture = HypergeometricMixture(pricelambda, a, b, c, z{2});
             price = exp(-(data.(cn.riskFreeRate) - data.(cn.dividendYield)) * data.(cn.timeToMaturity)) *...
-                sum(omega .* (d + (data.(cn.strike) - mu) ./ abs(data.(cn.strike) - mu) .* sigma .^ 2 .* nu ./ (nu - 1) ./...
-                 normalizationFactor .* (1 + (data.(cn.strike) - mu) .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5 .*...
-                Student.approximateBySingleFraction(a , b, c, z{2})));
+            priceHypergeometricMixture.computeApproximation();
         end
         function price = getForwardPrice(parameters)
         %GETFORWARDPRICE Computes underlying model forward price.
