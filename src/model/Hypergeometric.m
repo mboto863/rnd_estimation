@@ -43,7 +43,24 @@ classdef Hypergeometric < handle
                 if obj.lambda == 0
                     approximation = 0;
                 else
-                    approximation = obj.lambda * obj.computeByTaylorA();
+                    methodOutput = obj.computeByTaylorA();
+                    % No convergence from the Taylor series method A.
+                    if isnan(methodOutput)
+                        methodOutput = obj.computeBySingleFraction();
+
+                        % No convergence from the Single Fraction method.
+                        if isnan(methodOutput)
+                            approximation = obj.lambda * obj.computeByGaussJacobiQuadrature(16);
+                        
+                        % Convergence.
+                        else
+                            approximation = obj.lambda * methodOutput;
+                        end
+
+                    % Convergence
+                    else
+                        approximation = obj.lambda * methodOutput;
+                    end
                 end
             end
         end
@@ -125,6 +142,93 @@ classdef Hypergeometric < handle
                 end
             end
         end
+        function approximation = computeByGaussJacobiQuadrature(obj, nPoints)
+        %COMPUTEBYGAUSSJACOBIQUADRATURE Computes the Gaussian Hypergeometric function by the Gauss Jacobi
+        % Quadrature method.
+        %
+        % Input:
+        %   obj              The HypergeometricCalculator object.
+        %   nPoints          The number of points to use for the quadrature.
+        %
+        % Output:
+        %   approximation    An approximation to the Gaussian Hypergeometric function.
+            
+            % Compute Gauss-Jacobi quadrature nodes and weights.
+            [nodes ,weights] = GaussJacobiQuadrature.computeNodesWeights(obj.c - obj.b - 1,obj.b - 1, nPoints);
+            
+            % Compute the Hypergeometric function using its integral representation.
+            approximation = gamma(obj.c) *...
+                (sum(weights .* ((1 - ((obj.z  * (nodes + 1)) / 2)) .^ (-obj.a))) /...
+                gamma(obj.b) /...
+                gamma(obj.c - obj.b) /...
+                (2 ^ (obj.c - 1)));
+        end
+        function approximation = computeBySingleFraction(obj)
+        %COMPUTEBYSINGLEFRACTION Computes the Gaussian Hypergeometric function up to a tol using the Single Fraction
+        % method.
+        %
+        % Input:
+        %   obj              The HypergeometricCalculator object.
+        %
+        % Output:
+        %   approximation    An approximation to the Gaussian Hypergeometric function.
+        
+        % Assign maximum number of iterations.
+            MAX_ITER = 500;
+            
+            % Initialise sequences.
+            alphaSequence = [0, obj.c];
+            betaSequence  = [1, obj.a * obj.b * obj.z];
+            gammaSequence = [1, obj.c];
+            SSequence     = [1, (obj.c + obj.a * obj.b * obj.z) / obj.c];
+            
+            for iIdx = 3 : MAX_ITER
+                % Compute next values of alphaSequence(iIdx), betaSequence(iIdx), gammaSequence(iIdx) recursively
+                alphaSequence(iIdx) = (alphaSequence(iIdx - 1) +...
+                    betaSequence(iIdx - 1)) * (iIdx - 1) * (obj.c + iIdx - 2);
+                betaSequence(iIdx)  = betaSequence(iIdx - 1) * (obj.a + iIdx - 2) * (obj.b + iIdx - 2) * obj.z;
+                gammaSequence(iIdx) = gammaSequence(iIdx - 1) * (iIdx - 1) * (obj.c + iIdx - 2);
+                
+                % Stop if any of these are infinitely large
+                isSequenceInf = isinf(alphaSequence(iIdx)) || isinf(betaSequence(iIdx)) || isinf(gammaSequence(iIdx));
+                if isSequenceInf
+
+                    % Return NaN to let the interface know there was no convergence.
+                    approximation = NaN;
+
+                    % Log this failure.
+                    logger = PersistentLogger.getInstance();
+                    logger.writeWarning(...
+                        "Infinite values reached for one of 'alphaSequence':%d, 'betaSequence: %d, gammaSequence: %d at iteration %d",...
+                        alphaSequence(iIdx), betaSequence(iIdx), gammaSequence(iIdx), iIdx);
+                    return
+                end
+                
+                % Compute next term in SSequence(iIdx)
+                SSequence(iIdx) = (alphaSequence(iIdx) + betaSequence(iIdx)) / gammaSequence(iIdx);
+                
+                % Check if stopping criterion is satisfied.
+                stoppingCriterion =...
+                    (abs(SSequence(iIdx) - SSequence(iIdx - 1)) / abs(SSequence(iIdx - 1)) < Constants.tolSingleFraction) &&...
+                    (abs(SSequence(iIdx - 1) - SSequence(iIdx - 2)) / abs(SSequence(iIdx - 2)) <...
+                    Constants.tolSingleFraction);
+                if stoppingCriterion
+                    break
+                end
+                
+                % No convergence
+                if (iIdx == MAX_ITER)
+                    approximation = NaN;
+                    logger = PersistentLogger.getInstance();
+                    logger.writeWarning(...
+                        "No convergence achieved for parameter case %s with Single Fraction method.", obj.id);
+                    return
+                end
+            end
+            
+            % If convergence achieved, return sum of terms computed
+            approximation = SSequence(end);
+        end
         % Numerical methods for approximating hypergeometric value
         function approximation = computeByTaylorA(obj)
             %COMPUTEBYTAYLORA Computes the hypergeometric function using Taylor series method A up to a tolerance.
@@ -168,7 +272,7 @@ classdef Hypergeometric < handle
                         
                         % Log a warning.
                         logger.writeWarning(...
-                            "No convergence achieved for parameter case %s with Taylor series method A", obj.id);
+                            "No convergence achieved with Taylor series method A");
                         return
                     else
                         % Keep computing.

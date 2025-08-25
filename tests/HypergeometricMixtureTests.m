@@ -18,11 +18,11 @@ classdef HypergeometricMixtureTests < matlab.perftest.TestCase
         function prepareData(tc)
             
             % Data is randomly initiated.
-            tc.lambdaData = ones(100, 2);
-            tc.aData = -0.5 * ones(100, 2);
-            tc.bData = rand(100, 2);
-            tc.cData = 0.5 * ones(100, 2);
-            tc.zData = rand(100, 2);
+            tc.lambdaData = ones(1000, 2);
+            tc.aData = -0.5 * ones(1000, 2);
+            tc.bData = rand(1000, 2);
+            tc.cData = 0.5 * ones(1000, 2);
+            tc.zData = rand(1000, 2);
             
         end
     end
@@ -266,22 +266,5 @@ classdef HypergeometricMixtureTests < matlab.perftest.TestCase
                 end
             end
         end
-        % function testReference(tc)
-        %     % Built-in outputs
-        %     referenceOutputs = nan(size(tc.aData, 1), 1);
-            
-        %     % Measure
-        %     while tc.keepMeasuring
-        %         for iIn = 1 : size(tc.aData, 1)
-        %             % Calculate reference output at ith input.
-        %             referenceOutputs(iIn) =...
-        %                 sum(hypergeom(...
-        %                     [tc.aData(iIn, :), tc.bData(iIn, :)],...
-        %                     tc.cData(iIn, :),...
-        %                     tc.zData(iIn, :)...
-        %                     ));
-        %         end
-        %     end
-        % end
     end
 end

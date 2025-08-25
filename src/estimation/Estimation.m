@@ -26,18 +26,25 @@ classdef Estimation < handle
                 return
             else
                 % estimate
-                structuredOuput = obj.estimateRiskNeutralDensity(valueHandler, data);
-                percentError = obj.computePercentError(structuredOuput, data);
+                structuredOutput = obj.estimateRiskNeutralDensity(valueHandler, data);
+                percentError = obj.computePercentError(structuredOutput, data);
                 
                 % store outputs
-                obj.outputHandler.addRecord('fval', structuredOuput.exit_flag, day);
-                obj.outputHandler.addRecord('exit_flag', structuredOuput.exit_flag, day);
+                obj.outputHandler.addRecord('fval', structuredOutput.fval, day);
+                obj.outputHandler.addRecord('exit_flag', structuredOutput.exit_flag, day);
                 obj.outputHandler.addRecord('perc_error', percentError, day);
                 
+                % Informative logs.
+                logger = PersistentLogger.getInstance();
+                logger.writeInfo("fval: %d", structuredOutput.fval);
+                logger.writeInfo("exit_flag: %d", structuredOutput.exit_flag);
+                logger.writeInfo("perc_error: %d", percentError);
+
                 for iName = 1 : size(valueHandler.names, 2)
-                    name = valueHandler.names{jName};
-                    obj.outputHandler.addRecord(name, valueHandler.get(name), day);
+                    name = valueHandler.names{iName};
+                    obj.outputHandler.addRecord(name, valueHandler.getParameter(name), day);
                 end
+
             end
         end
         function runEstimation(obj)
@@ -57,11 +64,7 @@ classdef Estimation < handle
             names        = obj.parameterSetup.getNames();            
             values       = obj.parameterSetup.initializeAll(firstDataset);
             % value handler instance
-            valueHandler = ValueHandler(...
-                obj.parameterSetup.dimension,...
-                names,...
-                values...
-                );
+            valueHandler = ValueHandler(obj.parameterSetup.dimension, names, values);
             % get files
             files = obj.fileReader.getFiles();
             % iterate over days
@@ -72,13 +75,13 @@ classdef Estimation < handle
                     continue;
                 end
                 % estimate
-                structuredOuput = obj.estimateRiskNeutralDensity(...
+                structuredOutput = obj.estimateRiskNeutralDensity(...
                     valueHandler, data...
                     );
                 % store outputs
                 obj.outputHandler.addRecord(...
                     'fval',...
-                    structuredOuput.exit_flag,...
+                    structuredOuput.fval,...
                     iDay...
                     );
                 obj.outputHandler.addRecord(...
@@ -99,7 +102,7 @@ classdef Estimation < handle
                     name = valueHandler.names{jName};
                     obj.outputHandler.addRecord(...
                         name,...
-                        valueHandler.get(name),...
+                        valueHandler.getParameter(name),...
                         iDay...
                         );
                 end
@@ -153,10 +156,10 @@ classdef Estimation < handle
                 );
             % update parameter values
             valueHandler.setVector(theta);
-            output.omega = valueHandler.get('omega');
-            output.mu    = valueHandler.get('mu');
-            output.sigma = valueHandler.get('sigma');
-            output.nu    = valueHandler.get('nu');
+            output.omega = valueHandler.getParameter('omega');
+            output.mu    = valueHandler.getParameter('mu');
+            output.sigma = valueHandler.getParameter('sigma');
+            output.nu    = valueHandler.getParameter('nu');
             
             % other optimization metrics
             output.fval      = fval;
