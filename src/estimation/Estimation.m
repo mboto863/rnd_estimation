@@ -4,7 +4,7 @@ classdef Estimation < handle
         outputHandler OutputHandler
         fileReader FileReader
         parameterSetup (1, 1)
-        options = optimset('Display', 'none', 'TolFun', 1e-6, 'TolX', 1e-6);
+        options = optimset('Display', 'none', 'TolFun', 1e-12, 'TolX', 1e-6);
     end
     methods
         function obj = Estimation(model, fileReader, parameterSetup)
