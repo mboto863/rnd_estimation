@@ -51,7 +51,7 @@ classdef Estimator < handle
                 % Store outputs
                 obj.outputHandler.addRecord('fval', structuredOutput.fval, day);
                 obj.outputHandler.addRecord('exit_flag', structuredOutput.exit_flag, day);
-                obj.outputHandler.addRecord('perc_error', percentError, day);
+                obj.outputHandler.addRecord('percentError', percentError, day);
                 
                 % Informative logs.
                 logger = PersistentLogger.getInstance();

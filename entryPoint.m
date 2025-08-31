@@ -17,7 +17,18 @@ function main()
     % Initiate an estimator.
     estimator = Estimator(model, fileReader);
 
+    % Estimate first day.
     estimator.estimateDay(1);
+
+    % The outputs from the estimation.
+    outputs = estimator.outputHandler;
+
+    % Write the parameter outputs in CSV format.
+    writer = Writer(model, outputs);
+    writer.writeParameters();
+    writer.writeMetrics();
+
+    disp('Done')
 end
 
 function startupProject()

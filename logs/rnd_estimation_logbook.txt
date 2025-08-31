@@ -1,0 +1,10 @@
+[31-Aug-2025 16:11:24] [INFO] Logger started at 31-Aug-2025 16:11:24
+[31-Aug-2025 16:11:24] [INFO] fval: 1.593173e+05
+[31-Aug-2025 16:11:24] [INFO] exit_flag: 2
+[31-Aug-2025 16:43:39] [INFO] fval: 1.593173e+05
+[31-Aug-2025 16:43:39] [INFO] exit_flag: 2
+[31-Aug-2025 20:25:00] [INFO] Logger started at 31-Aug-2025 20:25:00
+[31-Aug-2025 20:25:00] [INFO] fval: 1.593173e+05
+[31-Aug-2025 20:25:00] [INFO] exit_flag: 2
+[31-Aug-2025 20:32:59] [INFO] fval: 1.593173e+05
+[31-Aug-2025 20:32:59] [INFO] exit_flag: 2
