@@ -1,0 +1,3 @@
+classdef Lognormal < Model
+
+end
