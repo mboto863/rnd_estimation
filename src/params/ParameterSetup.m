@@ -8,5 +8,6 @@ classdef (Abstract) ParameterSetup
         lower        = getLowerBound(obj, name)
         upper        = getUpperBound(obj, name)
         initialValue = initializeParameter(obj, name, data)
+        names        = getNames()
     end
 end

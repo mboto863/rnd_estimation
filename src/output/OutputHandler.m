@@ -1,6 +1,6 @@
 classdef OutputHandler < handle
-    properties
-        logbook struct = struct();
+    properties (Access = private)
+        logbook = struct();
     end
     methods
         function addRecord(obj, clause, state, day)
@@ -27,8 +27,8 @@ classdef OutputHandler < handle
             end
             obj.logbook.(clause)(day) = state;
         end
-        function records = getClauseRecords(obj, clause)
-        %GETCLAUSERECORDS(OBJ, CLAUSE) Retrieve the logged outputs from clause CLAUSE.
+        function records = getClause(obj, clause)
+        %GETCLAUSE(OBJ, CLAUSE) Retrieve the logged outputs from clause CLAUSE.
         %
         % Input:
         %   obj           The OutputHandler object.
@@ -39,7 +39,7 @@ classdef OutputHandler < handle
 
             arguments
                 obj OutputHandler
-                clause string
+                clause
             end
             if isfield(obj.logbook, clause)
                 records = obj.logbook.(clause);

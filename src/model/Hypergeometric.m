@@ -193,8 +193,8 @@ classdef Hypergeometric < handle
                 isSequenceInf = isinf(alphaSequence(iIdx)) || isinf(betaSequence(iIdx)) || isinf(gammaSequence(iIdx));
                 if isSequenceInf
 
-                    % Return NaN to let the interface know there was no convergence.
-                    approximation = NaN;
+                    % Return Inf to let the interface know there was no convergence.
+                    approximation = Inf;
 
                     % Log this failure.
                     logger = PersistentLogger.getInstance();
@@ -218,10 +218,10 @@ classdef Hypergeometric < handle
                 
                 % No convergence
                 if (iIdx == MAX_ITER)
-                    approximation = NaN;
+                    approximation = Inf;
                     logger = PersistentLogger.getInstance();
                     logger.writeWarning(...
-                        "No convergence achieved for parameter case %s with Single Fraction method.", obj.id);
+                        "No convergence achieved with Single Fraction method.");
                     return
                 end
             end
@@ -265,7 +265,7 @@ classdef Hypergeometric < handle
                         
                         % No convergence
                     elseif iIdx == MAX_ITER
-                        approximation = NaN;
+                        approximation = Inf;
                         
                         % Get logger.
                         logger = PersistentLogger.getInstance();
@@ -306,7 +306,7 @@ classdef Hypergeometric < handle
                         
                         % Log warning.
                         logger.writeWarning(...
-                            "No convergence achieved for parameter case %s, with Taylor series method A");
+                            "No convergence achieved with Taylor series method A");
                         return
                     else
                         % Keep computing.

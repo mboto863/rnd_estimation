@@ -1,15 +1,24 @@
 classdef Student < Model
     properties
-        
+        dimension
+    end
+    methods
+        function obj = Student(dimension)
+            obj.dimension = dimension;
+        end
+
+        function parameterSetup = getParameterSetup(obj)
+            parameterSetup = StudentParameterSetup(obj.dimension);
+        end
     end
     methods (Static)
-        function [inequality, equality] = getNonLinearConstraint(theta, valueHandler, data)
+        function [inequality, equality] = getNonLinearConstraint(theta, valueHandler, futuresPrice)
         %GETNONLINEARCONSTRAINT Computes the non linear constraints.
         %
         % Input:
         %   theta           The RND parameters.
         %   valueHandler    A ValueHandler object.
-        %   data            tablized option data
+        %   data            Smoothed option data.
         %
         % Output:
         %   inequality      Non linear constraint inequality.
@@ -18,37 +27,33 @@ classdef Student < Model
             arguments
                 theta (1, :)
                 valueHandler ValueHandler
-                data table
+                futuresPrice (1, 1)
             end
-            % Assign alias for ColumnNamesConfig
-            c = ColumnNamesConfig();
 
             % update value handler
             valueHandler.setVector(theta);
 
             % set parameters
-            parameters = valueHandler.getStructure();            
+            parameters = valueHandler.getStructure();
 
             % constraints
-            equality   = Student.getForwardPrice(parameters) - data.(c.futuresPrice)(1);
+            equality   = Student.getForwardPrice(parameters) - futuresPrice;
             inequality = [];
         end
-        function price = getPrice(parameters, data)
+        function price = getPrice(parameters, contractData)
         %GETPRICE Computes option model price.
         %
         % Input:
         %   parameters  The RND parameters.
-        %   data        Tablized option data.
+        %   data        Smoothed option data.
         %
         % Output:
         %   price       Option model price.
         %
             arguments
                 parameters struct
-                data (1, :)
+                contractData struct
             end
-            % Assign alias for ColumnNamesConfig
-            cn = ColumnNamesConfig();
 
             % set parameters
             omega = parameters.omega;
@@ -67,7 +72,7 @@ classdef Student < Model
             c                   = 0.5 * ones(size(mu));
             z                   = {...
                 1 ./ (1 + sigma .^ 2 .* nu ./ mu .^ 2),...
-                (data.(cn.strike) - mu) .^ 2 ./ ((data.(cn.strike) - mu) .^ 2 + sigma .^ 2 .* nu)...
+                (contractData.strike - mu) .^ 2 ./ ((contractData.strike - mu) .^ 2 + sigma .^ 2 .* nu)...
                 };
             
             % Compute RND factors
@@ -88,15 +93,15 @@ classdef Student < Model
             omega = [omega, 1 - sum(omega)];
 
             % Lambda scalar of price.
-            priceLambda = omega .* (d + (data.(cn.strike) - mu) ./ abs(data.(cn.strike) - mu) .* sigma .^ 2 .* nu ./...
-            (nu - 1) ./ normalizationFactor .* (1 + (data.(cn.strike) - mu) .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5);
+            priceLambda = omega .* (d + (contractData.strike - mu) ./ abs(contractData.strike - mu) .* sigma .^ 2 .* nu ./...
+            (nu - 1) ./ normalizationFactor .* (1 + (contractData.strike - mu) .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5);
             % Compute price.
             priceValues = zeros(size(a));
             for iIn = 1 : numel(a)
                 priceHypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z{2}(iIn));
                 priceValues(iIn)    = priceLambda(iIn) * priceHypergeometric.computeApproximation();
             end
-            price = exp(-(data.(cn.riskFreeRate) - data.(cn.dividendYield)) * data.(cn.timeToMaturity)) *...
+            price = exp(-(contractData.riskFreeRate - contractData.dividendYield) * contractData.timeToMaturity) *...
             sum(priceValues);
             % priceHypergeometricMixture = HypergeometricMixture(pricelambda, a, b, c, z{2});
             % price = exp(-(data.(cn.riskFreeRate) - data.(cn.dividendYield)) * data.(cn.timeToMaturity)) *...
