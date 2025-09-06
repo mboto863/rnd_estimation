@@ -12,7 +12,7 @@ classdef Student < Model
         end
     end
     methods (Static)
-        function [inequality, equality] = getNonLinearConstraint(theta, valueHandler, futuresPrice)
+        function [inequality, equality] = getNonLinearConstraint(theta, valueHandler, contractData)
         %GETNONLINEARCONSTRAINT Computes the non linear constraints.
         %
         % Input:
@@ -27,7 +27,7 @@ classdef Student < Model
             arguments
                 theta (1, :)
                 valueHandler ValueHandler
-                futuresPrice (1, 1)
+                contractData
             end
 
             % update value handler
@@ -37,7 +37,7 @@ classdef Student < Model
             parameters = valueHandler.getStructure();
 
             % constraints
-            equality   = Student.getForwardPrice(parameters) - futuresPrice;
+            equality   = Student.getForwardPrice(parameters, contractData) - contractData.futuresPrice;
             inequality = [];
         end
         function price = getPrice(parameters, contractData)
@@ -107,7 +107,7 @@ classdef Student < Model
             % price = exp(-(data.(cn.riskFreeRate) - data.(cn.dividendYield)) * data.(cn.timeToMaturity)) *...
             % priceHypergeometricMixture.computeApproximation();
         end
-        function price = getForwardPrice(parameters)
+        function price = getForwardPrice(parameters, contractData)
         %GETFORWARDPRICE Computes underlying model forward price.
         %
         % Input:
@@ -118,6 +118,7 @@ classdef Student < Model
         %
             arguments
                 parameters struct
+                contractData
             end
             price = sum(parameters.omega .* parameters.mu(1 : end - 1)) + (...
                 1 - sum(parameters.omega)) * parameters.mu(end);

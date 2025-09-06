@@ -9,6 +9,51 @@ classdef LognormalParameterSetup < ParameterSetup
             end
             obj.dimension = dimension;
         end
+        function lower = getAllLowerBounds(obj)
+        %GETALLLOWERBOUNDS Computes the parameter lower bounds.
+        %
+        % Input:
+        %   obj     The StudentParameterSetup object.
+        %
+        % Output:
+        %   lower   The lower bounds.
+
+            arguments
+                obj
+            end
+            lower = [...
+                obj.getLowerBound("omega"),...
+                obj.getLowerBound("mu"),...
+                obj.getLowerBound("sigma"),...
+                ];
+        end
+        function lower = getLowerBound(obj, name)
+        %GETLOWERBOUND Computes the lower bound for a single parameter.
+        %
+        % Input:
+        %   obj     The StudentParameterSetup object.
+        %   name    The name of the parameter.
+        %
+        % Output:
+        %   lower   The lower bound.
+
+            arguments
+                obj
+                name (1, 1) string
+            end
+            %takes name of par and returns its static lower bound
+            switch name
+                case "omega"
+                    %last dimension of omega is known
+                    lower = zeros(1, obj.dimension - 1);
+                case "mu"
+                    lower = -Inf * ones(1, obj.dimension);
+                case "sigma"
+                    lower = zeros(1, obj.dimension);
+                otherwise
+                    error('Invalid parameter value');
+            end
+        end
         function vector = initializeAll(obj, data)
         %INITIALIZEALL Computes the initial values for the optimization algorithm.
         %
@@ -20,7 +65,7 @@ classdef LognormalParameterSetup < ParameterSetup
         %   vector  The intial values of the parameters.
 
             arguments
-                obj StudentParameterSetup
+                obj
                 data table
             end
             vector = [...
@@ -41,7 +86,7 @@ classdef LognormalParameterSetup < ParameterSetup
         %   initialValue    The initial value.
 
             arguments
-                obj StudentParameterSetup
+                obj
                 name (1, 1) string
                 data table
             end

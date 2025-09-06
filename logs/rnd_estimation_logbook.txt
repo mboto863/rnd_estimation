@@ -8,3 +8,12 @@
 [31-Aug-2025 20:25:00] [INFO] exit_flag: 2
 [31-Aug-2025 20:32:59] [INFO] fval: 1.593173e+05
 [31-Aug-2025 20:32:59] [INFO] exit_flag: 2
+[06-Sep-2025 20:15:52] [INFO] Logger started at 06-Sep-2025 20:15:52
+[06-Sep-2025 20:15:52] [INFO] fval: 1.593173e+05
+[06-Sep-2025 20:15:52] [INFO] exit_flag: 2
+[06-Sep-2025 20:43:50] [INFO] fval: 9.461541e+05
+[06-Sep-2025 20:43:50] [INFO] exit_flag: 2
+[06-Sep-2025 21:31:11] [INFO] fval: 2.525854e+212
+[06-Sep-2025 21:31:11] [INFO] exit_flag: 0
+[06-Sep-2025 21:37:42] [INFO] fval: 2.525854e+212
+[06-Sep-2025 21:37:42] [INFO] exit_flag: 0
