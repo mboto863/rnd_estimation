@@ -12,7 +12,7 @@ classdef Lognormal < Model
         end
     end
     methods (Static)
-        function [inequality, equality] = getNonLinearConstraint(theta, valueHandler, contractData)
+        function [inequality, equality] = getNonLinearConstraint(theta, valueHandler, futuresPrice)
         %GETNONLINEARCONSTRAINT Computes the non linear constraints.
         %
         % Input:
@@ -27,17 +27,11 @@ classdef Lognormal < Model
             arguments
                 theta (1, :)
                 valueHandler ValueHandler
-                contractData struct
+                futuresPrice
             end
 
-            % update value handler
-            valueHandler.setVector(theta);
-
-            % set parameters
-            parameters = valueHandler.getStructure();
-
             % constraints
-            equality   = Lognormal.getForwardPrice(parameters, contractData) - contractData.futuresPrice;
+            equality   = [];
             inequality = [];
         end
         function price = getPrice(parameters, contractData)
@@ -62,19 +56,18 @@ classdef Lognormal < Model
             % Complete last omega.
             omega = [omega, 1 - sum(omega)];
 
-            % Parameters of the template lognormal density.
-            alpha = log(contractData.underlyingMid) + ((mu - (1/2 * (sigma .^ 2))) * contractData.timeToMaturity);
-            beta  = sigma * sqrt(contractData.timeToMaturity);
             
             % Pricing formula variables.
-            d1 = (-log(contractData.strike) + alpha + (beta .^ 2)) / beta;
-            d2 = d1 - beta;
+            d1 = (-log(contractData.strike) + mu + (sigma .^ 2)) ./ sigma;
+
+            
+            d2 = d1 - sigma;
 
             % Compute the option model price.
-            priceValues = omega .* (-exp(alpha + (beta .^ 2)/2) .* normcdf(-d1) + contractData.strike * normcdf(-d2));
+            priceValues = omega .* (-exp(mu + (sigma .^ 2)/2) .* normcdf(-d1) + contractData.strike .* normcdf(-d2));
             price       = exp(-(contractData.riskFreeRate * contractData.timeToMaturity)) * sum(priceValues);
         end
-        function price = getForwardPrice(parameters, contractData)
+        function price = getForwardPrice(parameters)
         %GETFORWARDPRICE Computes underlying model forward price.
         %
         % Input:
@@ -85,13 +78,12 @@ classdef Lognormal < Model
         %
             arguments
                 parameters struct
-                contractData struct
             end
             % Complete last omega.
             omega = [parameters.omega, 1 - sum(parameters.omega)];
             
             % Compute the forward model price.
-            priceValues = contractData.underlyingMid * (omega .* exp(parameters.mu * contractData.timeToMaturity));
+            priceValues = omega .* parameters.mu;
             price       = sum(priceValues);
         end
     end

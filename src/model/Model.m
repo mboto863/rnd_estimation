@@ -7,8 +7,8 @@ classdef (Abstract) Model
     end
     methods (Abstract, Static)
         [inequality, equality] = getNonLinearConstraint(theta,...
-            valueHandler, contractData)
+            valueHandler, futuresPrice)
         price                  = getPrice(parameters, contractData)
-        price                  = getForwardPrice(parameters, contractData)
+        price                  = getForwardPrice(parameters, futuresPrice)
     end
 end

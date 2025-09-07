@@ -98,7 +98,7 @@ classdef LognormalParameterSetup < ParameterSetup
                     initialValue = (1 / obj.dimension) * ones(1, obj.dimension - 1);
                 case "mu"
                     forwardPrice             = data.(cnf.futuresPrice)(1);
-                    initialValue = forwardPrice * ones(1, obj.dimension);
+                    initialValue = 10 * ones(1, obj.dimension);
                 case "sigma"
 
                     % All indices
@@ -116,7 +116,7 @@ classdef LognormalParameterSetup < ParameterSetup
                     
                     % Assuming implied volatility comes in percentage of the underlying mid price.
                     impliedVolatility    = data.(cnf.impliedVolatility)(impliedVolatilityIdx) * dayUnderlyingMid;
-                    initialValue         = impliedVolatility * ones(1, obj.dimension);
+                    initialValue         = 0.2 * ones(1, obj.dimension);
                 otherwise
                     error(...
                         'Invalid parameter. Valid parameters: omega, mu, sigma'...
