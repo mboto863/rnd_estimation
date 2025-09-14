@@ -43,7 +43,7 @@ classdef FileReader < handle
             files = obj.getFiles();
             % read from file
             tablizedDay     = readtable(files(day));
-            [data, success] = FileReader.filterTable(tablizedDay);            
+            [data, success] = FileReader.filterTable(tablizedDay);
         end
     end
     methods (Static, Access = private)
