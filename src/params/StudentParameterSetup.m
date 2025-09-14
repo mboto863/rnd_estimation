@@ -88,9 +88,9 @@ classdef StudentParameterSetup < ParameterSetup
                     %last dimension of omega is known
                     lower = zeros(1, obj.dimension - 1);
                 case "mu"
-                    lower = -1e4 * ones(1, obj.dimension);
+                    lower = -Inf * ones(1, obj.dimension);
                 case "sigma"
-                    lower = 1e-6 * ones(1, obj.dimension);
+                    lower = zeros(1, obj.dimension);
                 case "nu"
                     lower = (2 + 1e-6) * ones(1, obj.dimension);
                 otherwise

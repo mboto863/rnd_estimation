@@ -1,3 +1,5 @@
 docs/quotes.md
 .VSCodeCounter/
 logs/
+metrics_lognormal.csv
+parameters_lognormal.csv

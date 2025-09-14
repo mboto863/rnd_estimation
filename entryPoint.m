@@ -9,17 +9,17 @@ function main()
     dimension = 2;
 
     % Choose the template of the risk neutral density.
-    model = Student(dimension);
+    model = Lognormal(dimension);
 
     % Initiate a file reader.
     fileReader = FileReader();
 
     % Initiate an estimator.
     estimator = Estimator(model, fileReader);
-
+    tic
     % Estimate first day.
     estimator.estimateDay(1);
-
+    toc
     % The outputs from the estimation.
     outputs = estimator.outputHandler;
 

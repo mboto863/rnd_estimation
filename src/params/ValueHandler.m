@@ -124,5 +124,8 @@ classdef ValueHandler < handle
             end
             value = obj.state.(name);
         end
+        function names = getParameterNames(obj)
+            names = obj.names;
+        end
     end
 end

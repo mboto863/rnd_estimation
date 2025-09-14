@@ -4,7 +4,14 @@ classdef Estimator < handle
         outputHandler OutputHandler
         fileReader FileReader
         valueHandler ValueHandler
-        options = optimset('Display', 'none', 'TolFun', 1e-12, 'TolX', 1e-6);
+        parameterSetup
+        options = optimset(...
+            'Display',...
+            'none',...
+            'TolFun',...
+            1e-12,...
+            'TolX',...
+            1e-6);
     end
     methods
         function obj = Estimator(model, fileReader)
@@ -17,14 +24,14 @@ classdef Estimator < handle
             obj.fileReader     = fileReader;
             
             % Get the parameter setup object.
-            parameterSetup = model.getParameterSetup();
+            obj.parameterSetup = model.getParameterSetup();
 
             % initialize parameter values
             firstDataset = fileReader.readDay(1);
-            names        = parameterSetup.getNames();
-            values       = parameterSetup.initializeAll(firstDataset);
+            names        = obj.parameterSetup.getNames();
+            values       = obj.parameterSetup.initializeAll(firstDataset);
             
-            obj.valueHandler = ValueHandler(parameterSetup.dimension, names, values);
+            obj.valueHandler = ValueHandler(obj.parameterSetup.dimension, names, values);
         end
         function estimateDay(obj, day)
         %ESTIMATEDAY Estimate the risk neutral density for a single day. Store outputs in an OutputHandler object.
@@ -57,7 +64,8 @@ classdef Estimator < handle
                 logger = PersistentLogger.getInstance();
                 logger.writeInfo("fval: %d", structuredOutput.fval);
                 logger.writeInfo("exit_flag: %d", structuredOutput.exit_flag);
-
+                logger.writeInfo("from stucturedOutput, omega: [%s]", mat2str(structuredOutput.omega))
+                logger.writeInfo("from valueHandler, omega: [%s]", mat2str(obj.valueHandler.getParameter('omega')))
                 for iName = 1 : size(obj.valueHandler.names, 2)
                     name = obj.valueHandler.names{iName};
                     obj.outputHandler.addRecord(name, obj.valueHandler.getParameter(name), day);
@@ -94,30 +102,29 @@ classdef Estimator < handle
         %   smoothData      Data obtained from the smoothing of market data.
         %
         % Output:
-        %   output          The output from the optimization algorithm.
+        %   output          The output from the optimization algorithm. Is struct.
 
             arguments
                 obj Estimator
                 smoothData struct
             end
 
-            % Cache the ValueHandler object.
-            valueHandler = obj.valueHandler;
-
             % get values from value handler
-            initialValues = valueHandler.getVector();
+            initialValues = obj.valueHandler.getVector();
             
             % get constraints
+            lb = obj.parameterSetup.getAllLowerBounds();
+            logger = PersistentLogger.getInstance();
+            logger.writeDebug("lb: [%s]", mat2str(lb));
             wrappedConstraint = @(theta) feval(...
                 obj.model+".getNonLinearConstraint",...
                 theta,...
-                valueHandler,...
+                obj.valueHandler,...
                 smoothData.futuresPrice...
                 );
             % to minimize sum of squared errors
             objectiveFunction = @(theta) obj.sumSquaredErrors(...
                 theta,...
-                valueHandler,...
                 smoothData...
                 );
             % optimization algorithm
@@ -128,18 +135,22 @@ classdef Estimator < handle
                 [],...
                 [],...
                 [],...
-                [],...
+                lb,...
                 [],...
                 wrappedConstraint, ...
                 obj.options...
                 );
             % update parameter values
-            valueHandler.setVector(theta);
-            output.omega = valueHandler.getParameter('omega');
-            output.mu    = valueHandler.getParameter('mu');
-            output.sigma = valueHandler.getParameter('sigma');
-            output.nu    = valueHandler.getParameter('nu');
-            
+            obj.valueHandler.setVector(theta);
+            logger.writeDebug("theta: [%s]", mat2str(theta));
+            % The names of the parameters in value handler.
+            names = obj.valueHandler.getParameterNames();
+
+            % Update output handler.
+            for iName = 1 : numel(names)
+                output.(names{iName}) = obj.valueHandler.getParameter(names{iName});
+            end
+
             % other optimization metrics
             output.fval      = fval;
             output.exit_flag = exit_flag;
@@ -163,7 +174,8 @@ classdef Estimator < handle
             contractData = struct(...
                 'riskFreeRate', smoothData.riskFreeRate,...
                 'dividendYield', smoothData.dividendYield,...
-                'timeToMaturity', smoothData.timeToMaturity...
+                'timeToMaturity', smoothData.timeToMaturity,...
+                'underlyingMid', smoothData.underlyingMid...
                 );
 
             % compute percent errors
@@ -196,13 +208,12 @@ classdef Estimator < handle
             end
             error = feval(obj.model + ".getPrice", parameters, contractData) - contractData.putPrice;
         end
-        function error = sumSquaredErrors(obj, theta, valueHandler, smoothData)
+        function error = sumSquaredErrors(obj, theta, smoothData)
         %SUMSQUAREDERRORS Computes the sum of the squared option model price errors
         %
         % Input:
         %   obj             The Estimator object.
         %   theta           The RND parameters
-        %   valueHandler    A ValueHandler object.
         %   smoothData      Data obtained from smoothing market data.
         %
         % Output:
@@ -211,21 +222,21 @@ classdef Estimator < handle
             arguments
                 obj Estimator
                 theta (1, :)
-                valueHandler ValueHandler
                 smoothData struct
             end
 
             % update values
-            valueHandler.setVector(theta);
+            obj.valueHandler.setVector(theta);
             
             % get structured values
-            parameters = valueHandler.getStructure();
+            parameters = obj.valueHandler.getStructure();
             
             % Data from a single contract.
             contractData = struct(...
                 'riskFreeRate', smoothData.riskFreeRate,...
                 'dividendYield', smoothData.dividendYield,...
-                'timeToMaturity', smoothData.timeToMaturity...
+                'timeToMaturity', smoothData.timeToMaturity,...
+                'underlyingMid', smoothData.underlyingMid...
                 );
 
 

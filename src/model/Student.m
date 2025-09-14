@@ -27,7 +27,7 @@ classdef Student < Model
             arguments
                 theta (1, :)
                 valueHandler ValueHandler
-                futuresPrice (1, 1)
+                futuresPrice
             end
 
             % update value handler
