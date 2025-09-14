@@ -18,3 +18,80 @@
 [07-Sep-2025 21:27:27] [INFO] exit_flag: 1
 [07-Sep-2025 21:36:12] [INFO] fval: 9.461541e+05
 [07-Sep-2025 21:36:12] [INFO] exit_flag: 2
+[08-Sep-2025 22:41:00] [INFO] Logger started at 08-Sep-2025 22:41:00
+[08-Sep-2025 22:41:00] [INFO] fval: 4.674233e+06
+[08-Sep-2025 22:41:00] [INFO] exit_flag: 1
+[08-Sep-2025 22:49:04] [INFO] fval: 4.674233e+06
+[08-Sep-2025 22:49:04] [INFO] exit_flag: 1
+[13-Sep-2025 11:52:37] [INFO] Logger started at 13-Sep-2025 11:52:37
+[13-Sep-2025 11:52:37] [INFO] fval: 4.674233e+06
+[13-Sep-2025 11:52:37] [INFO] exit_flag: 1
+[13-Sep-2025 12:03:18] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:03:18] [INFO] exit_flag: 1
+[13-Sep-2025 12:14:00] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:14:00] [INFO] exit_flag: 1
+[13-Sep-2025 12:14:00] [INFO] from stucturedOutput, omega: [0.5]
+[13-Sep-2025 12:14:00] [INFO] from valueHandler, omega: [0.5]
+[13-Sep-2025 12:17:02] [DEBUG] theta: [[0.5 10 10 0.2 0.2]]
+[13-Sep-2025 12:17:02] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:17:02] [INFO] exit_flag: 1
+[13-Sep-2025 12:17:02] [INFO] from stucturedOutput, omega: [0.5]
+[13-Sep-2025 12:17:02] [INFO] from valueHandler, omega: [0.5]
+[13-Sep-2025 12:18:19] [DEBUG] theta: [[0.333333333333333 0.333333333333333 10 10 10 0.2 0.2 0.2]]
+[13-Sep-2025 12:18:19] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:18:19] [INFO] exit_flag: 1
+[13-Sep-2025 12:18:19] [INFO] from stucturedOutput, omega: [[0.333333333333333 0.333333333333333]]
+[13-Sep-2025 12:18:19] [INFO] from valueHandler, omega: [[0.333333333333333 0.333333333333333]]
+[13-Sep-2025 12:18:40] [DEBUG] theta: [[0.25 0.25 0.25 10 10 10 10 0.2 0.2 0.2 0.2]]
+[13-Sep-2025 12:18:40] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:18:40] [INFO] exit_flag: 1
+[13-Sep-2025 12:18:40] [INFO] from stucturedOutput, omega: [[0.25 0.25 0.25]]
+[13-Sep-2025 12:18:40] [INFO] from valueHandler, omega: [[0.25 0.25 0.25]]
+[13-Sep-2025 12:19:41] [DEBUG] theta: [[0.5 10 10 0.2 0.2]]
+[13-Sep-2025 12:19:41] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:19:41] [INFO] exit_flag: 1
+[13-Sep-2025 12:19:41] [INFO] from stucturedOutput, omega: [0.5]
+[13-Sep-2025 12:19:41] [INFO] from valueHandler, omega: [0.5]
+[13-Sep-2025 12:19:55] [DEBUG] theta: [[0.5 10 10 0.2 0.2]]
+[13-Sep-2025 12:19:55] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:19:55] [INFO] exit_flag: 1
+[13-Sep-2025 12:19:55] [INFO] from stucturedOutput, omega: [0.5]
+[13-Sep-2025 12:19:55] [INFO] from valueHandler, omega: [0.5]
+[13-Sep-2025 12:23:28] [DEBUG] lb: [[0 -Inf -Inf 0 0]]
+[13-Sep-2025 12:23:28] [DEBUG] theta: [[0.5 10 10 0.2 0.2]]
+[13-Sep-2025 12:23:28] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:23:28] [INFO] exit_flag: 1
+[13-Sep-2025 12:23:28] [INFO] from stucturedOutput, omega: [0.5]
+[13-Sep-2025 12:23:28] [INFO] from valueHandler, omega: [0.5]
+[13-Sep-2025 12:24:28] [DEBUG] lb: [[0 -Inf -Inf 0 0]]
+[13-Sep-2025 12:24:28] [DEBUG] wrappedConstraint: 
+[13-Sep-2025 12:24:28] [DEBUG] theta: [[0.5 10 10 0.2 0.2]]
+[13-Sep-2025 12:24:29] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:24:29] [INFO] exit_flag: 1
+[13-Sep-2025 12:24:29] [INFO] from stucturedOutput, omega: [0.5]
+[13-Sep-2025 12:24:29] [INFO] from valueHandler, omega: [0.5]
+[13-Sep-2025 12:26:53] [DEBUG] lb: [[0 -Inf -Inf 0 0]]
+[13-Sep-2025 12:26:53] [DEBUG] theta: [[0.5 10 10 0.2 0.2]]
+[13-Sep-2025 12:26:53] [INFO] fval: 4.674233e+06
+[13-Sep-2025 12:26:53] [INFO] exit_flag: 1
+[13-Sep-2025 12:26:53] [INFO] from stucturedOutput, omega: [0.5]
+[13-Sep-2025 12:26:53] [INFO] from valueHandler, omega: [0.5]
+[13-Sep-2025 12:29:25] [DEBUG] lb: [[0 -Inf -Inf 0 0]]
+[13-Sep-2025 12:30:04] [DEBUG] theta: [[0.10520462793894 8.42297971681026 8.47909563957264 0.064394050006248 0.0180699197886319]]
+[13-Sep-2025 12:30:04] [INFO] fval: 7.613663e+02
+[13-Sep-2025 12:30:04] [INFO] exit_flag: 2
+[13-Sep-2025 12:30:04] [INFO] from stucturedOutput, omega: [0.10520462793894]
+[13-Sep-2025 12:30:04] [INFO] from valueHandler, omega: [0.10520462793894]
+[13-Sep-2025 12:30:47] [DEBUG] lb: [[0 -Inf -Inf 0 0]]
+[13-Sep-2025 12:31:25] [DEBUG] theta: [[0.10520462793894 8.42297971681026 8.47909563957264 0.064394050006248 0.0180699197886319]]
+[13-Sep-2025 12:31:25] [INFO] fval: 7.613663e+02
+[13-Sep-2025 12:31:25] [INFO] exit_flag: 2
+[13-Sep-2025 12:31:25] [INFO] from stucturedOutput, omega: [0.10520462793894]
+[13-Sep-2025 12:31:25] [INFO] from valueHandler, omega: [0.10520462793894]
+[14-Sep-2025 10:33:13] [INFO] Logger started at 14-Sep-2025 10:33:13
+[14-Sep-2025 10:33:13] [DEBUG] lb: [[0 -Inf -Inf 0 0]]
+[14-Sep-2025 10:33:59] [DEBUG] theta: [[0.10520462793894 8.42297971681026 8.47909563957264 0.064394050006248 0.0180699197886319]]
+[14-Sep-2025 10:33:59] [INFO] fval: 7.613663e+02
+[14-Sep-2025 10:33:59] [INFO] exit_flag: 2
+[14-Sep-2025 10:33:59] [INFO] from stucturedOutput, omega: [0.10520462793894]
+[14-Sep-2025 10:33:59] [INFO] from valueHandler, omega: [0.10520462793894]
