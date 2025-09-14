@@ -63,27 +63,26 @@ classdef FileReader < handle
             end
 
             % filter columns
-            % data = data(:, columns);
-            c = ColumnNamesConfig();
+            cnf = ColumnNamesConfig();
             
             % cells do not support operator '=='
-            data.(c.rootCycle) = categorical(data.(c.rootCycle));
-            data.(c.optionType)   = categorical(data.(c.optionType));
+            data.(cnf.rootCycle)  = categorical(data.(cnf.rootCycle));
+            data.(cnf.optionType) = categorical(data.(cnf.optionType));
             
             
             
-            filtered = data((data.(c.rootCycle) == Constants.expirationPattern) &...
-            (data.(c.daysToMaturity) > Constants.minimumDaysToExpiration) &...
-            (data.(c.optionBid) > Constants.minimumTickValue), :);                     
+            filtered = data((data.(cnf.rootCycle) == Constants.expirationPattern) &...
+            (data.(cnf.daysToMaturity) > Constants.minimumDaysToExpiration) &...
+            (data.(cnf.optionBid) > Constants.minimumTickValue), :);
             
             % filter ITM options
-            filtered(((filtered.(c.optionType) == Constants.callCodification) &...
-            (filtered.(c.strike) <= filtered.(c.futuresPrice))) |...
-            ((filtered.(c.optionType) == Constants.putCodification) &...
-            (filtered.(c.strike) >= filtered.(c.futuresPrice))), :) = [];
+            filtered(((filtered.(cnf.optionType) == Constants.callCodification) &...
+            (filtered.(cnf.strike) <= filtered.(cnf.futuresPrice))) |...
+            ((filtered.(cnf.optionType) == Constants.putCodification) &...
+            (filtered.(cnf.strike) >= filtered.(cnf.futuresPrice))), :) = [];
 
             % Pick first maturity.
-            filtered = filtered(filtered.(c.maturity) == filtered.(c.maturity)(1), :);
+            filtered = filtered(filtered.(cnf.maturity) == filtered.(cnf.maturity)(1), :);
             
             % Filter for variables not used in the estimation.
             estimationVariables = Constants.estimationVariables;

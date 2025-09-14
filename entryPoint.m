@@ -9,7 +9,7 @@ function main()
     dimension = 2;
 
     % Choose the template of the risk neutral density.
-    model = Student(dimension);
+    model = Lognormal(dimension);
 
     % Initiate a file reader.
     fileReader = FileReader();

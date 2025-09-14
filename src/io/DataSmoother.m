@@ -5,9 +5,9 @@ classdef DataSmoother
             % Alias column names configuration class.
             cnf = ColumnNamesConfig();
 
-            divisibleByFifty = mod(data.(cnf.strike), 50) == 0;
+            isDivisibleByFifty = mod(data.(cnf.strike), 50) == 0;
 
-            data = data(divisibleByFifty, :);
+            data = data(isDivisibleByFifty, :);
 
             % The strikes and volatilities from market data.
             strikes = data.(cnf.strike);

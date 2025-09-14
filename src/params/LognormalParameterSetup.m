@@ -116,7 +116,7 @@ classdef LognormalParameterSetup < ParameterSetup
                     
                     % Assuming implied volatility comes in percentage of the underlying mid price.
                     impliedVolatility    = data.(cnf.impliedVolatility)(impliedVolatilityIdx) * dayUnderlyingMid;
-                    initialValue         = 0.2 * ones(1, obj.dimension);
+                    initialValue         = 0.4 * ones(1, obj.dimension);
                 otherwise
                     error(...
                         'Invalid parameter. Valid parameters: omega, mu, sigma'...
