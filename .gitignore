@@ -2,3 +2,5 @@ docs/quotes.md
 .VSCodeCounter/
 logs/
 estimation_metrics/
+metrics.csv
+parameters.csv
