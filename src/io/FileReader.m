@@ -70,32 +70,14 @@ classdef FileReader < handle
             data.(cnf.rootCycle)  = categorical(data.(cnf.rootCycle));
             data.(cnf.optionType) = categorical(data.(cnf.optionType));
             
-            % Sort the data by ascending strike.
-            data = sortrows(data, cnf.strike);
-            
-            % The call rows.
-            callAsk    = data(data.(cnf.optionType) == c.callCodification, cnf.optionAsk);
-            callAskRows = 1 : numel(callAsk);
-
-            % The rows where the call ask is at the minimum tick value.
-            callRowsMinimumTick = callAskRows(callAsk.(cnf.optionAsk) == 0.05);
-
-            % The put rows.
-            putAsk    = data(data.(cnf.optionType) == c.putCodification, cnf.optionAsk);
-            putAskRows = 1 : numel(putAsk);
-
-            % The rows where the put ask is at the minimum tick value.
-            putRowsMinimumTick = putAskRows(putAsk.(cnf.optionAsk) == 0.05);
-
-            % Remove the rows.
-            rowsToRemove          = [putRowsMinimumTick(1 : (end - 1)), callRowsMinimumTick(2 : end)];
-            data(rowsToRemove, :) = [];
-
             % Filter the option expiration pattern and maturity.
             filtered = data((data.(cnf.rootCycle) == c.expirationPattern) &...
                 (data.(cnf.daysToMaturity) > c.minimumDaysToExpiration),...
-                :);
+                :...
+            );
 
+            % Pick first maturity.
+            filtered = filtered(filtered.(cnf.maturity) == filtered.(cnf.maturity)(1), :);
             
             % filter ITM options
             filtered(((filtered.(cnf.optionType) == c.callCodification) &...
@@ -103,9 +85,27 @@ classdef FileReader < handle
             ((filtered.(cnf.optionType) == c.putCodification) &...
             (filtered.(cnf.strike) >= filtered.(cnf.futuresPrice))), :) = [];
 
-            % Pick first maturity.
-            filtered = filtered(filtered.(cnf.maturity) == filtered.(cnf.maturity)(1), :);
+            % Sort the data by ascending strike.
+            filtered = sortrows(filtered, cnf.strike);
             
+            % The call rows.
+            callBid    = filtered(filtered.(cnf.optionType) == c.callCodification, cnf.optionBid);
+            callBidRows = 1 : numel(callBid);
+
+            % The rows where the call ask is at the minimum tick value.
+            callRowsMinimumTick = callBidRows(callBid.(cnf.optionBid) <= 0.05);
+
+            % The put rows.
+            putBid    = filtered(filtered.(cnf.optionType) == c.putCodification, cnf.optionBid);
+            putBidRows = 1 : numel(putBid);
+
+            % The rows where the put ask is at the minimum tick value.
+            putRowsMinimumTick = putBidRows(putBid.(cnf.optionBid) <= 0.05);
+
+            % Remove the rows.
+            rowsToRemove          = [putRowsMinimumTick(1 : (end - 1)), callRowsMinimumTick(2 : end)];
+            filtered(rowsToRemove, :) = [];
+
             % Filter for variables not used in the estimation.
             filtered = filtered(:, c.estimationVariables);
             

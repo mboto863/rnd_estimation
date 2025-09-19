@@ -6,7 +6,7 @@ end
 function main()
     disp('Entry point has triggered the main program logic.');
     % Choose the dimension of the mixture approximation.
-    dimension = 2;
+    dimension = 3;
 
     % Choose the template of the risk neutral density.
     model = Lognormal(dimension);
@@ -26,7 +26,7 @@ function main()
     % Write the parameter outputs in CSV format.
     writer = Writer(model, outputs);
     writer.writeParameters();
-    writer.writeMetrics();
+    writer.writeMetrics(true);
 
     % Write an option price comparison plot.
     writer.createComparisonPlot();

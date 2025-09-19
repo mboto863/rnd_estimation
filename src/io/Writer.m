@@ -125,8 +125,11 @@ classdef Writer
         end
 
         % Handle the metrics.
-        function writeMetrics(obj)
-
+        function writeMetrics(obj, isToRemoveOutliers)
+            arguments
+                obj
+                isToRemoveOutliers logical
+            end
             % Get the estimation days.
             days = obj.getDays();
             nDays = numel(days);
@@ -182,6 +185,11 @@ classdef Writer
 
             for iEstimation = 1 : nDays
                 tempPercentError = percentErrorClause(iEstimation);
+                if isToRemoveOutliers
+                    tempPercentError = rmoutliers(tempPercentError,'movmedian', 25);
+                else
+                    % All percent errors.
+                end
                 logger = PersistentLogger.getInstance();
                 logger.writeDebug("tempPercentError: [%s]", mat2str(tempPercentError));
                 T.MeanPE(iEstimation) = mean(tempPercentError);
