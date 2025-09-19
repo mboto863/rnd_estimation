@@ -59,37 +59,57 @@ classdef FileReader < handle
         %   success     Whether the table contains enough data to be used
 
             arguments
-                data table                
+                data table
             end
 
             % filter columns
             cnf = ColumnNamesConfig();
+            c   = Constants();
             
             % cells do not support operator '=='
             data.(cnf.rootCycle)  = categorical(data.(cnf.rootCycle));
             data.(cnf.optionType) = categorical(data.(cnf.optionType));
             
-            
-            
-            filtered = data((data.(cnf.rootCycle) == Constants.expirationPattern) &...
-            (data.(cnf.daysToMaturity) > Constants.minimumDaysToExpiration) &...
-            (data.(cnf.optionBid) > Constants.minimumTickValue), :);
+            % The call rows.
+            callAsk    = data(data.(cnf.optionType) == c.callCodification, cnf.optionAsk);
+            callAskRows = 1 : numel(callAsk);
+
+            % The rows where the call ask is at the minimum tick value.
+            callRowsMinimumTick = callAskRows(callAsk.(cnf.optionAsk) == 0.05);
+
+            % The put rows.
+            putAsk    = data(data.(cnf.optionType) == c.putCodification, cnf.optionAsk);
+            putAskRows = 1 : numel(putAsk);
+
+            % The rows where the put ask is at the minimum tick value.
+            putRowsMinimumTick = putAskRows(putAsk.(cnf.optionAsk) == 0.05);
+
+            % Remove the rows.
+            rowsToRemove          = [putRowsMinimumTick(1 : (end - 1)), callRowsMinimumTick(2 : end)];
+            logger = PersistentLogger.getInstance();
+            logger.writeInfo("rowsToRemove: [%s]", mat2str(rowsToRemove));
+            data(rowsToRemove, :) = [];
+
+            % Filter the option expiration pattern and maturity.
+            filtered = data((data.(cnf.rootCycle) == c.expirationPattern) &...
+                (data.(cnf.daysToMaturity) > c.minimumDaysToExpiration),...
+                :);
+
             
             % filter ITM options
-            filtered(((filtered.(cnf.optionType) == Constants.callCodification) &...
+            filtered(((filtered.(cnf.optionType) == c.callCodification) &...
             (filtered.(cnf.strike) <= filtered.(cnf.futuresPrice))) |...
-            ((filtered.(cnf.optionType) == Constants.putCodification) &...
+            ((filtered.(cnf.optionType) == c.putCodification) &...
             (filtered.(cnf.strike) >= filtered.(cnf.futuresPrice))), :) = [];
 
             % Pick first maturity.
             filtered = filtered(filtered.(cnf.maturity) == filtered.(cnf.maturity)(1), :);
             
             % Filter for variables not used in the estimation.
-            estimationVariables = Constants.estimationVariables;
-
-            filtered = filtered(:, estimationVariables);
-            % check if enough data
-            if height(filtered) <= Constants.minimumRows
+            filtered = filtered(:, c.estimationVariables);
+            
+            % Check if there is enough data for the estimation to take place.
+            if height(filtered) <= c.minimumRows
                 filtered = [];
                 success  = false;
                 return

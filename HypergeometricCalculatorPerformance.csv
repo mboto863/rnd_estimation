@@ -1,3 +1,0 @@
-Name,SampleSize,Mean,StandardDeviation,Min,Median,Max
-HypergeometricMixtureTests/generalPerformance,250,0.0176125832,0.00842934218598292,0.0112849,0.0149823,0.084776
-HypergeometricMixtureTests/truthGeneralPerformance,4,1.123790425,0.0227854026524842,1.0963119,1.12576945,1.1473109

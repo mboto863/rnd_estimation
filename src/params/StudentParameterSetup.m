@@ -150,6 +150,7 @@ classdef StudentParameterSetup < ParameterSetup
                 case "mu"
                     forwardPrice             = data.(c.futuresPrice)(1);
                     initialValue = forwardPrice * ones(1, obj.dimension);
+
                 case "sigma"
 
                     % All indices
