@@ -187,7 +187,7 @@ classdef Estimator < handle
                 contractData.putPrice = smoothData.putPrice(iContract);
 
                 % Compute the percent error.
-                percentError(iContract) = obj.computeError(parameters, contractData) / contractData.putPrice;
+                percentError(iContract) = obj.computeError(parameters, contractData) / contractData.putPrice * 100;
             end
         end
         function error = computeError(obj, parameters, contractData)
@@ -243,21 +243,8 @@ classdef Estimator < handle
             % assign sum variable
             sumValue = 0;
             
-            % iterate over rows
+            % Iterate over rows
             for iContract = 1 : numel(smoothData.putPrice)
-                % % check option type                
-                % if data.(c.optionType)(iRow) == Constants.callCodification
-                %     % if call, get implicit put price
-                %     data.(c.optionMid)(iRow) = data.(c.optionMid)(iRow) - data.(c.underlyingMid)(iRow)...
-                %         * exp(-data.(c.dividendYield)(1) * data.(c.timeToMaturity)(1)) +...
-                %         data.(c.strike)(iRow) * exp(-data.(c.riskFreeRate)(1) * data.(c.timeToMaturity)(1));
-                %     sumValue       = sumValue + obj.computeError(parameters,...
-                %         data(iRow, :)) ^ 2;
-                % elseif data.(c.optionType)(iRow) == Constants.putCodification
-                %     sumValue = sumValue + obj.computeError(parameters,...
-                %         data(iRow, :)) ^ 2;
-                % end
-
                 % Update strike and option price of contract.
                 contractData.strike = smoothData.strike(iContract);
                 contractData.putPrice = smoothData.putPrice(iContract);

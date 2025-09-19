@@ -28,6 +28,9 @@ function main()
     writer.writeParameters();
     writer.writeMetrics();
 
+    % Write an option price comparison plot.
+    writer.createComparisonPlot();
+
     disp('Done')
 end
 

@@ -12,7 +12,8 @@ classdef DataSmoother
             % The strikes and volatilities from market data.
             strikes = data.(cnf.strike);
             volatilities = data.(cnf.impliedVolatility);
-
+            logger = PersistentLogger.getInstance();
+            logger.writeDebug("data.(cnf.strike): [%s]", mat2str(strikes));
             % Piecewise polynomial obtained from a cubic spline of strikes to volatilities.
             piecewisePolynomial = spline(strikes, volatilities);
 

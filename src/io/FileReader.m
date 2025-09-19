@@ -70,6 +70,9 @@ classdef FileReader < handle
             data.(cnf.rootCycle)  = categorical(data.(cnf.rootCycle));
             data.(cnf.optionType) = categorical(data.(cnf.optionType));
             
+            % Sort the data by ascending strike.
+            data = sortrows(data, cnf.strike);
+            
             % The call rows.
             callAsk    = data(data.(cnf.optionType) == c.callCodification, cnf.optionAsk);
             callAskRows = 1 : numel(callAsk);
@@ -86,8 +89,6 @@ classdef FileReader < handle
 
             % Remove the rows.
             rowsToRemove          = [putRowsMinimumTick(1 : (end - 1)), callRowsMinimumTick(2 : end)];
-            logger = PersistentLogger.getInstance();
-            logger.writeInfo("rowsToRemove: [%s]", mat2str(rowsToRemove));
             data(rowsToRemove, :) = [];
 
             % Filter the option expiration pattern and maturity.
