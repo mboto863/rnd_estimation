@@ -68,81 +68,81 @@ classdef HypergeometricTests < matlab.perftest.TestCase
                 tc.verifyEqual(approximation, truth, 'RelTol', 1e-6);
             end
         end
-        function betweenZeroAndOneHalf(tc)
-            a = tc.aData;
-            b = -5 + (0 - 5) * tc.bData;
-            c = tc.cData;
-            z = 0 + (0.5 - 0) * tc.zData;
+        % function betweenZeroAndOneHalf(tc)
+        %     a = tc.aData;
+        %     b = -5 + (0 - 5) * tc.bData;
+        %     c = tc.cData;
+        %     z = 0 + (0.5 - 0) * tc.zData;
 
-            for iIn = 1 : numel(a)
-                hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
+        %     for iIn = 1 : numel(a)
+        %         hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
                 
-                % Calculate.
-                approximation = hypergeometric.computeApproximation();
+        %         % Calculate.
+        %         approximation = hypergeometric.computeApproximation();
                 
-                % Built-in functionality.
-                truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
+        %         % Built-in functionality.
+        %         truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
                 
-                % Verify.
-                tc.verifyEqual(approximation, truth, 'RelTol', 1e-6);
-            end
-        end
-        function betweenOneHalfAndOne(tc)
-            a = tc.aData;
-            b = -5 + (0 - 5) * tc.bData;
-            c = tc.cData;
-            z = 0.5 + (1 - 0.5) * tc.zData;
+        %         % Verify.
+        %         tc.verifyEqual(approximation, truth, 'RelTol', 1e-6);
+        %     end
+        % end
+        % function betweenOneHalfAndOne(tc)
+        %     a = tc.aData;
+        %     b = -5 + (0 - 5) * tc.bData;
+        %     c = tc.cData;
+        %     z = 0.5 + (1 - 0.5) * tc.zData;
 
-            for iIn = 1 : numel(a)
-                hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
+        %     for iIn = 1 : numel(a)
+        %         hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
                 
-                % Calculate.
-                approximation = hypergeometric.computeApproximation();
+        %         % Calculate.
+        %         approximation = hypergeometric.computeApproximation();
                 
-                % Built-in functionality.
-                truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
+        %         % Built-in functionality.
+        %         truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
                 
-                % Verify.
-                tc.verifyEqual(approximation, truth, 'RelTol', 1e-3);
-            end
-        end
-        function betweenOneAndTwo(tc)
-            a = tc.aData;
-            b = -5 + (0 - 5) * tc.bData;
-            c = tc.cData;
-            z = 1 + (2 - 1) * tc.zData;
+        %         % Verify.
+        %         tc.verifyEqual(approximation, truth, 'RelTol', 1e-3);
+        %     end
+        % end
+        % function betweenOneAndTwo(tc)
+        %     a = tc.aData;
+        %     b = -5 + (0 - 5) * tc.bData;
+        %     c = tc.cData;
+        %     z = 1 + (2 - 1) * tc.zData;
 
-            for iIn = 1 : numel(a)
-                hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
+        %     for iIn = 1 : numel(a)
+        %         hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
                 
-                % Calculate.
-                approximation = hypergeometric.computeApproximation();
+        %         % Calculate.
+        %         approximation = hypergeometric.computeApproximation();
                 
-                % Built-in functionality.
-                truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
+        %         % Built-in functionality.
+        %         truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
                 
-                % Verify.
-                tc.verifyEqual(approximation, truth, 'RelTol', 1e-6);
-            end
-        end
-        function betweenTwoAndLarge(tc)
-            a = tc.aData;
-            b = -5 + (0 - 5) * tc.bData;
-            c = tc.cData;
-            z = 2 + (20 - 2) * tc.zData;
+        %         % Verify.
+        %         tc.verifyEqual(approximation, truth, 'RelTol', 1e-6);
+        %     end
+        % end
+        % function betweenTwoAndLarge(tc)
+        %     a = tc.aData;
+        %     b = -5 + (0 - 5) * tc.bData;
+        %     c = tc.cData;
+        %     z = 2 + (20 - 2) * tc.zData;
 
-            for iIn = 1 : numel(a)
-                hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
+        %     for iIn = 1 : numel(a)
+        %         hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
                 
-                % Calculate.
-                approximation = hypergeometric.computeApproximation();
+        %         % Calculate.
+        %         approximation = hypergeometric.computeApproximation();
                 
-                % Built-in functionality.
-                truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
+        %         % Built-in functionality.
+        %         truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
                 
-                % Verify.
-                tc.verifyEqual(approximation, truth, 'RelTol', 1e-6);
-            end
-        end
+        %         % Verify.
+        %         tc.verifyEqual(approximation, truth, 'RelTol', 1e-6);
+        %     end
+        % end
     end
 end

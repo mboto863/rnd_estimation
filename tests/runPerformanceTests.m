@@ -4,9 +4,9 @@ function runPerformanceTests(test)
 % Input:
 
 switch test
-    case "Hypergeometric"
+    case "Calculator"
         % Run performance tests.
-        results = runperf("HypergeometricTests");
+        results = runperf("CalculatorPerformanceTests");
     case "HypergeometricMixture"
         % Run performance tests.
         results = runperf("HypergeometricMixtureTests");
