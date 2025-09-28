@@ -37,7 +37,7 @@ classdef DataSmootherTests < matlab.unittest.TestCase
             grid on;
 
             % Save figure
-            saveas(figure(1), 'firstDayFit.png');
+            saveas(figure(1), 'firstDayDataSmootherFit.png');
 
             figure(2);
 
@@ -48,7 +48,7 @@ classdef DataSmootherTests < matlab.unittest.TestCase
             grid on;
 
             % Save figure
-            saveas(figure(2), 'firstDayPutPrice.png')
+            saveas(figure(2), 'firstDayDataSmootherPutPrice.png')
         end
     end
 end

@@ -17,10 +17,10 @@ classdef HypergeometricTests < matlab.perftest.TestCase
         function prepareData(tc)
             
             % Data is randomly initiated.
-            tc.aData = -0.5 * ones(100, 1);
-            tc.bData = rand(100, 1);
-            tc.cData = 0.5 * ones(100, 1);
-            tc.zData = rand(100, 1);
+            tc.aData = -0.5 * ones(1000, 1);
+            tc.bData = rand(1000, 1);
+            tc.cData = 0.5 * ones(1000, 1);
+            tc.zData = rand(1000, 1);
             
         end
     end
@@ -32,9 +32,9 @@ classdef HypergeometricTests < matlab.perftest.TestCase
         function betweenLargeAndMinusOne(tc)
             
             a = tc.aData;
-            b = -5 + (0 - 5) * tc.bData;
+            b = 2 + (50 - 2) * tc.bData;
             c = tc.cData;
-            z = -20 + (-1 + 0) * tc.zData;
+            z = -40 + (-1 - (-40)) * tc.zData;
 
             for iIn = 1 : numel(a)
                 hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
@@ -46,14 +46,14 @@ classdef HypergeometricTests < matlab.perftest.TestCase
                 truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
                 
                 % Verify.
-                tc.verifyEqual(approximation, truth, 'RelTol', 1e-12);
+                tc.verifyEqual(approximation, truth, 'RelTol', 1e-13);
             end
         end
         function betweenMinusOneAndZero(tc)
             a = tc.aData;
-            b = -5 + (0 - 5) * tc.bData;
+            b = 2 + (50 - 2) * tc.bData;
             c = tc.cData;
-            z = -1 + (0 + 1) * tc.zData;
+            z = -1 + (0 - (-1)) * tc.zData;
 
             for iIn = 1 : numel(a)
                 hypergeometric = Hypergeometric(1, a(iIn), b(iIn), c(iIn), z(iIn));
@@ -65,7 +65,7 @@ classdef HypergeometricTests < matlab.perftest.TestCase
                 truth = hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
                 
                 % Verify.
-                tc.verifyEqual(approximation, truth, 'RelTol', 1e-6);
+                tc.verifyEqual(approximation, truth, 'RelTol', 1e-10);
             end
         end
         % function betweenZeroAndOneHalf(tc)

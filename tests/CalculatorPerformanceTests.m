@@ -9,19 +9,21 @@ classdef CalculatorPerformanceTests < matlab.perftest.TestCase
         cData
         zData
     end
-    
-    % Class based setup
-    methods (TestClassSetup)
+
+    % Method based setup
+    methods (TestMethodSetup)
         
         % Prepare the data.
         function prepareData(tc)
-            
+            % Use a different seed at each iteration.
+            rng('shuffle');
+
             % Data is randomly initiated.
-            tc.lambdaData = ones(1000, 2);
-            tc.aData = -0.5 * ones(1000, 2);
-            tc.bData = rand(1000, 2);
-            tc.cData = 0.5 * ones(1000, 2);
-            tc.zData = rand(1000, 2);
+            tc.lambdaData = 1 * ones(1000, 1);
+            tc.aData = -0.5 * ones(1000, 1);
+            tc.bData = rand(1000, 1);
+            tc.cData = 0.5 * ones(1000, 1);
+            tc.zData = rand(1000, 1);
             
         end
     end
@@ -31,52 +33,64 @@ classdef CalculatorPerformanceTests < matlab.perftest.TestCase
         function calculatorBetweenLargeAndMinusOne(tc)
             lambda = tc.lambdaData;
             a      = tc.aData;
-            b      = -5 + (0 - 5) * tc.bData;
+            b      = 2 + (50 - 2) * tc.bData;
             c      = tc.cData;
-            z      = -20 + (-1 + 20) * tc.zData;
-
-            % Preallocate variable.
-            approximationValues = zeros(size(a));
-            while tc.keepMeasuring
-                for iIn = 1 : size(a, 1)
-                    for jComponent = 1 : numel(a(iIn))
-
-                        hypergeometric = Hypergeometric(...
-                        lambda(iIn, jComponent),...
-                        a(iIn, jComponent),...
-                        b(iIn, jComponent),...
-                        c(iIn, jComponent),...
-                        z(iIn, jComponent));
-                        
-                        approximationValues(iIn, jComponent) = hypergeometric.computeApproximation();
-                        approximation = sum(approximationValues(iIn, :));
-                    end
-                end
+            z      = -40 + (-1 - (-40)) * tc.zData;
+                    
+            for iIn = 1 : numel(a)
+                % Create the Hypergeometric object.
+                hypergeometric = Hypergeometric(...
+                    lambda(iIn),...
+                    a(iIn),...
+                    b(iIn),...
+                    c(iIn),...
+                    z(iIn)...
+                    );
+                
+                % Compute the approximation.
+                approximation = hypergeometric.computeApproximation();
+            end
+        end
+        function calculatorBetweenMinusOneAndZero(tc)
+            lambda = tc.lambdaData;
+            a      = tc.aData;
+            b      = 2 + (50 - 2) * tc.bData;
+            c      = tc.cData;
+            z      = -1 + (0 - (-1)) * tc.zData;
+                    
+            for iIn = 1 : numel(a)
+                % Create the Hypergeometric object.
+                hypergeometric = Hypergeometric(...
+                    lambda(iIn),...
+                    a(iIn),...
+                    b(iIn),...
+                    c(iIn),...
+                    z(iIn)...
+                    );
+                
+                % Compute the approximation.
+                approximation = hypergeometric.computeApproximation();
             end
         end
         function builtinBetweenLargeAndMinusOne(tc)
             lambda = tc.lambdaData;
             a      = tc.aData;
-            b      = -5 + (0 - 5) * tc.bData;
+            b      = 2 + (50 - 2) * tc.bData;
             c      = tc.cData;
-            z      = -20 + (-1 + 20) * tc.zData;
-            % Preallocate variable.
-            truthValues = zeros(size(a));
-            while tc.keepMeasuring
-                for iIn = 1 : size(a, 1)
-                    for jComponent = 1 : numel(a(iIn))
-
-                        truthValues(iIn, jComponent) = lambda(iIn, jComponent) * hypergeom(...
-                        [a(iIn, jComponent), b(iIn, jComponent)],...
-                        c(iIn, jComponent),...
-                        z(iIn, jComponent)...
-                        );
-                        
-                        approximation = sum(truthValues(iIn, :));
-                    end
-                end
+            z      = -40 + (-1 - (-40)) * tc.zData;
+            for iIn = 1 : numel(a)
+                truth = lambda(iIn) * hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
             end
-
+        end
+        function builtinBetweenMinusOneAndZero(tc)
+            lambda = tc.lambdaData;
+            a      = tc.aData;
+            b      = 2 + (50 - 2) * tc.bData;
+            c      = tc.cData;
+            z      = -1 + (0 - (-1)) * tc.zData;
+            for iIn = 1 : numel(a)
+                truth = lambda(iIn) * hypergeom([a(iIn), b(iIn)], c(iIn), z(iIn));
+            end
         end
     end
 end
