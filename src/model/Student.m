@@ -29,16 +29,17 @@ classdef Student < Model
                 valueHandler ValueHandler
                 futuresPrice
             end
-
+            EPSILON = 1e-3;
             % update value handler
             valueHandler.setVector(theta);
 
             % set parameters
             parameters = valueHandler.getStructure();
 
-            % constraints
-            equality   = Student.getForwardPrice(parameters) - futuresPrice;
-            inequality = [];
+            % Constraints.
+            constraintFunction   = Student.getForwardPrice(parameters) - futuresPrice;
+            equality = [];
+            inequality = [constraintFunction - EPSILON, -constraintFunction - EPSILON];
         end
         function price = getPrice(parameters, contractData)
         %GETPRICE Computes option model price.

@@ -65,7 +65,9 @@ classdef Lognormal < Model
 
             % Compute the option model price.
             priceValues = omega .* (-exp(mu + (sigma .^ 2)/2) .* normcdf(-d1) + contractData.strike .* normcdf(-d2));
-            price       = exp(-(contractData.riskFreeRate * contractData.timeToMaturity)) * sum(priceValues);
+            price       = exp(...
+                -((contractData.riskFreeRate - contractData.dividendYield) * contractData.timeToMaturity))...
+            * sum(priceValues);
         end
         function price = getForwardPrice(parameters)
         %GETFORWARDPRICE Computes underlying model forward price.
