@@ -60,9 +60,9 @@ classdef Writer
                 modelPrice(iContract) = obj.model.getPrice(parameters, contractData);
             end
             modelPrice = modelPrice(1 : 1000);
-            modelPricePlot = modelPrice(250 : 550);
-            strike = smoothData.strike(250 : 550);
-            marketPrice = smoothData.putPrice(250 : 550);
+            modelPricePlot = modelPrice(1 : 300);
+            strike = smoothData.strike(1 : 300);
+            marketPrice = smoothData.putPrice(1 : 300);
 
             % Remove estimated prices that are negative.
             positiveModelPrice = modelPricePlot(modelPricePlot >= 0);

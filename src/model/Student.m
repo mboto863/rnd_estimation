@@ -38,7 +38,7 @@ classdef Student < Model
 
             % Constraints.
             constraintFunction   = Student.getForwardPrice(parameters) - futuresPrice;
-            equality = [];
+            equality = sum(parameters.omega) - 1;
             inequality = [constraintFunction - EPSILON, -constraintFunction - EPSILON];
         end
         function price = getPrice(parameters, contractData)
@@ -90,9 +90,6 @@ classdef Student < Model
             end
             d = sum(dValues);
 
-            % Complete last omega.
-            omega = [omega, 1 - sum(omega)];
-
             % Lambda scalar of price.
             priceLambda = omega .* (d + (contractData.strike - mu) ./ abs(contractData.strike - mu) .* sigma .^ 2 .* nu ./...
             (nu - 1) ./ normalizationFactor .* (1 + (contractData.strike - mu) .^ 2 ./ sigma .^ 2 ./ nu) .^ 0.5);
@@ -120,8 +117,7 @@ classdef Student < Model
             arguments
                 parameters struct
             end
-            price = sum(parameters.omega .* parameters.mu(1 : end - 1)) + (...
-                1 - sum(parameters.omega)) * parameters.mu(end);
+            price = sum(parameters.omega .* parameters.mu);
         end
     end
     methods (Static, Access = private)

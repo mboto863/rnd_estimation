@@ -86,7 +86,7 @@ classdef StudentParameterSetup < ParameterSetup
             switch name
                 case "omega"
                     %last dimension of omega is known
-                    lower = zeros(1, obj.dimension - 1);
+                    lower = zeros(1, obj.dimension);
                 case "mu"
                     lower = -Inf * ones(1, obj.dimension);
                 case "sigma"
@@ -113,14 +113,14 @@ classdef StudentParameterSetup < ParameterSetup
             end
             switch name
                 case "omega"
-                    upper = ones(1, obj.dimension - 1);
+                    upper = ones(1, obj.dimension);
                 case "mu"
-                    upper = 1e4 * ones(1, obj.dimension);
+                    upper = +Inf * ones(1, obj.dimension);
                 case "sigma"
-                    upper = 4000 * ones(1, obj.dimension);
+                    upper = +Inf * ones(1, obj.dimension);
                 case "nu"
                     %bound for the single fraction method
-                    upper = 42 * ones(1, obj.dimension);
+                    upper = +Inf * ones(1, obj.dimension);
                 otherwise
                     error('Invalid parameter value');
             end
@@ -146,7 +146,7 @@ classdef StudentParameterSetup < ParameterSetup
 
             switch name
                 case "omega"
-                    initialValue = (1 / obj.dimension) * ones(1, obj.dimension - 1);
+                    initialValue = (1 / obj.dimension) * ones(1, obj.dimension);
                 case "mu"
                     forwardPrice             = data.(c.futuresPrice)(1);
                     initialValue = forwardPrice * ones(1, obj.dimension);

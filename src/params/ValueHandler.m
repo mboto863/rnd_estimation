@@ -16,8 +16,7 @@ classdef ValueHandler < handle
             obj.names = names;
 
             % There is a limitation here, the first parameter is assumed to be omega.
-            % The last component of omega is redundant, so store the other ones.
-            obj.lengths  = [dimension - 1, dimension * ones(1, size(names, 2) - 1)];
+            obj.lengths  = [dimension, dimension * ones(1, size(names, 2) - 1)];
             idx          = 1;
             obj.state(1) = struct();
             for iPar = 1:numel(names)

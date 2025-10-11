@@ -44,8 +44,7 @@ classdef LognormalParameterSetup < ParameterSetup
             %takes name of par and returns its static lower bound
             switch name
                 case "omega"
-                    %last dimension of omega is known
-                    lower = zeros(1, obj.dimension - 1);
+                    lower = zeros(1, obj.dimension);
                 case "mu"
                     lower = -Inf * ones(1, obj.dimension);
                 case "sigma"
@@ -95,7 +94,7 @@ classdef LognormalParameterSetup < ParameterSetup
 
             switch name
                 case "omega"
-                    initialValue = (1 / obj.dimension) * ones(1, obj.dimension - 1);
+                    initialValue = (1 / obj.dimension) * ones(1, obj.dimension);
                 case "mu"
                     forwardPrice             = data.(cnf.futuresPrice)(1);
                     initialValue = 10 * ones(1, obj.dimension);

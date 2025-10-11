@@ -6,10 +6,10 @@ end
 function main()
     disp('Entry point has triggered the main program logic.');
     % Choose the dimension of the mixture approximation.
-    dimension = 14;
+    dimension = 16;
 
     % Choose the template of the risk neutral density.
-    model = Student(dimension);
+    model = Lognormal(dimension);
 
     % Initiate a file reader.
     fileReader = FileReader();

@@ -29,9 +29,14 @@ classdef Lognormal < Model
                 valueHandler ValueHandler
                 futuresPrice
             end
+            % update value handler
+            valueHandler.setVector(theta);
 
-            % constraints
-            equality   = [];
+            % set parameters
+            parameters = valueHandler.getStructure();
+
+            % Constraints.
+            equality = sum(parameters.omega) - 1;
             inequality = [];
         end
         function price = getPrice(parameters, contractData)
@@ -52,9 +57,6 @@ classdef Lognormal < Model
             omega = parameters.omega;
             mu    = parameters.mu;
             sigma = parameters.sigma;
-
-            % Complete last omega.
-            omega = [omega, 1 - sum(omega)];
 
             
             % Pricing formula variables.
@@ -81,8 +83,6 @@ classdef Lognormal < Model
             arguments
                 parameters struct
             end
-            % Complete last omega.
-            omega = [parameters.omega, 1 - sum(parameters.omega)];
             
             % Compute the forward model price.
             priceValues = omega .* parameters.mu;
